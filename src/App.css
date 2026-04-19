@@ -17,17 +17,10 @@
   }
 }
 
-.brand-logo-placeholder {
-  font-size: 80px;
-  font-weight: 800;
-  color: var(--accent);
-  background: var(--accent-bg);
+.brand-logo {
   width: 150px;
   height: 150px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
+  object-fit: contain;
   margin: 0 auto;
 }
 

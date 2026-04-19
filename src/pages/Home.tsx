@@ -5,7 +5,7 @@ export default function Home() {
     <>
       <section id="center">
         <div className="hero">
-          <div className="brand-logo-placeholder">OE</div>
+          <img src="/OpenEssex.png" alt="Open Essex Logo" className="brand-logo" />
         </div>
         <div>
           <h1>Welcome to Open Essex</h1>
