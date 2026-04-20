@@ -49,8 +49,6 @@ export default function Documents() {
     }
   };
 
-  };
-
   return (
     <div className="page-container">
       <h1>課題・資料</h1>

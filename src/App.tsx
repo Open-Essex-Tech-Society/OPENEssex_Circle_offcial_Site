@@ -19,18 +19,8 @@ function ErrorBoundary({ children }: { children: React.ReactNode }) {
   }
 }
 
-function ProtectedRoute({ children, isLoggedIn, isLoading }: { children: React.ReactNode, isLoggedIn: boolean, isLoading: boolean }) {
-  if (isLoading) {
-    return <div className="page-container" style={{ textAlign: 'center' }}><p>読み込み中...</p></div>;
-  }
-  if (!isLoggedIn) {
-    return (
-      <div className="page-container" style={{ textAlign: 'center' }}>
-        <h2>メンバー限定コンテンツ</h2>
-        <p>このセクションにアクセスするにはログインが必要です。</p>
-      </div>
-    );
-  }
+function ProtectedRoute({ children }: { children: React.ReactNode, isLoggedIn: boolean, isLoading: boolean }) {
+  // ログイン機能を一時的に無効化し、常にコンテンツを表示
   return <>{children}</>;
 }
 
