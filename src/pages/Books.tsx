@@ -27,20 +27,29 @@ export default function Books() {
     fetchBooks();
   }, []);
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await fetch('/api/books', {
-      method: 'POST',
-      body: JSON.stringify({ title, author, description, link }),
-      headers: { 'Content-Type': 'application/json' }
-    });
-    if (res.ok) {
-      setTitle('');
-      setAuthor('');
-      setDescription('');
-      setLink('');
-      setShowForm(false);
-      fetchBooks();
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('/api/books', {
+        method: 'POST',
+        body: JSON.stringify({ title, author, description, link }),
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (res.ok) {
+        setTitle('');
+        setAuthor('');
+        setDescription('');
+        setLink('');
+        setShowForm(false);
+        fetchBooks();
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -80,7 +89,9 @@ export default function Books() {
             value={link} 
             onChange={e => setLink(e.target.value)} 
           />
-          <button type="submit">推薦を投稿する</button>
+          <button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? '投稿中...' : '推薦を投稿する'}
+          </button>
         </form>
       )}
 

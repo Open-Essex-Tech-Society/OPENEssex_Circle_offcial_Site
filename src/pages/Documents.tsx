@@ -25,20 +25,30 @@ export default function Documents() {
     fetchDocuments();
   }, []);
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await fetch('/api/documents', {
-      method: 'POST',
-      body: JSON.stringify({ title, content, author }),
-      headers: { 'Content-Type': 'application/json' }
-    });
-    if (res.ok) {
-      setTitle('');
-      setContent('');
-      setAuthor('');
-      setShowForm(false);
-      fetchDocuments();
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('/api/documents', {
+        method: 'POST',
+        body: JSON.stringify({ title, content }),
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (res.ok) {
+        setTitle('');
+        setContent('');
+        setShowForm(false);
+        fetchDocuments();
+      }
+    } finally {
+      setIsSubmitting(false);
     }
+  };
+
   };
 
   return (
@@ -71,7 +81,9 @@ export default function Documents() {
             required 
             rows={5}
           />
-          <button type="submit">投稿する</button>
+          <button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? '投稿中...' : '投稿する'}
+          </button>
         </form>
       )}
 
