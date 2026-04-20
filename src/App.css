@@ -193,6 +193,13 @@
   padding: 1rem 2rem;
   background: var(--brand-red);
   border-bottom: 3px solid var(--accent);
+  position: relative;
+  z-index: 9999; /* 最前面に配置 */
+}
+
+main {
+  position: relative;
+  z-index: 1; /* Navbarより低く設定 */
 }
 
 .navbar-brand a {
