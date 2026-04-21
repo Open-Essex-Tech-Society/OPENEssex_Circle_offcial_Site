@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { signInWithPopup, signOut, type User } from 'firebase/auth';
 import { auth, googleProvider } from '../firebase';
@@ -7,6 +8,28 @@ interface NavbarProps {
 }
 
 export default function Navbar({ user }: NavbarProps) {
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      // モバイル画面（768px以下）のみスクロール判定
+      if (window.innerWidth <= 768) {
+        if (window.scrollY > lastScrollY && window.scrollY > 80) {
+          setIsVisible(false); // 下スクロールで隠蔽
+        } else {
+          setIsVisible(true);  // 上スクロールで表示
+        }
+      } else {
+        setIsVisible(true); // PC時は常に表示
+      }
+      setLastScrollY(window.scrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
+
   const handleLogin = async () => {
     if (!auth) {
       alert("Firebaseの設定が完了していないため、ログイン機能は利用できません。");
@@ -30,7 +53,7 @@ export default function Navbar({ user }: NavbarProps) {
   };
 
   return (
-    <nav className="navbar glass-panel">
+    <nav className={`navbar glass-panel ${!isVisible ? 'navbar-hidden' : ''}`}>
       <div className="navbar-brand">
         <Link to="/">
           <img

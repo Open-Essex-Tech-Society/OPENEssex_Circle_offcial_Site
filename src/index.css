@@ -71,7 +71,10 @@ body {
   position: sticky;
   top: 1rem;
   z-index: 1000;
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.3s ease;
 }
+
+/* Rest of navbar classes */
 .navbar-brand a {
   display: flex;
   align-items: center;
@@ -141,9 +144,12 @@ body {
   .navbar {
     padding: 0.6rem 1rem;
     width: calc(100% - 16px);
-    border-radius: 100px; /* Keep the sleek pill shape */
-    flex-wrap: nowrap; /* Force single horizontal row */
+    border-radius: 100px;
+    flex-wrap: nowrap;
     gap: 1rem;
+  }
+  .navbar-hidden {
+    transform: translateY(-150%);
   }
   .navbar-brand a span {
     display: none; /* Hide text on mobile to save space */
