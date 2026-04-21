@@ -33,9 +33,9 @@ export default function Navbar({ user }: NavbarProps) {
     <nav className="navbar glass-panel">
       <div className="navbar-brand">
         <Link to="/">
-          <img 
-            src="/OpenEssex.png" 
-            alt="Logo" 
+          <img
+            src="/OpenEssex.png"
+            alt="Logo"
             className="navbar-logo"
           />
           <span>Open Essex</span>
