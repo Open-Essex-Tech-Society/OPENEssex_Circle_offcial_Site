@@ -208,47 +208,123 @@ code {
 }
 /* Removed pulse animation as requested */
 
-/* Member Nav Links */
-.member-nav-links {
-  list-style: none;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
-  max-width: 900px;
-  margin: 2rem auto;
+/* Features Bento Grid (Home Page) */
+#features-section {
+  padding: 2rem 0 6rem;
 }
-.link-button {
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+.feature-card {
+  display: flex;
+  flex-direction: column;
+  padding: 2.5rem;
+  text-decoration: none;
+  text-align: left;
+  border-radius: 32px;
+  background: var(--card-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 10px 40px -15px rgba(217, 37, 67, 0.08);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  overflow: hidden;
+  position: relative;
+}
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+.feature-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  border-color: var(--brand-red);
+  box-shadow: 0 20px 50px -10px rgba(217, 37, 67, 0.2);
+}
+.feature-card:hover::before {
+  opacity: 1;
+}
+.highlight-card {
+  background: linear-gradient(145deg, var(--card-bg), rgba(255, 107, 53, 0.05));
+  border: 1px solid rgba(255, 107, 53, 0.3);
+}
+.highlight-card::after {
+  content: "NEW!";
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  background: var(--brand-gradient);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 100px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
+}
+.feature-icon-wrapper {
+  background: rgba(217, 37, 67, 0.08);
+  width: 70px;
+  height: 70px;
+  border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1.5rem;
-  background: var(--card-bg);
+  margin-bottom: 1.5rem;
+  transition: transform 0.3s ease;
+}
+.feature-card:hover .feature-icon-wrapper {
+  transform: scale(1.1) rotate(5deg);
+  background: rgba(217, 37, 67, 0.15);
+}
+.feature-icon {
+  font-size: 2rem;
+}
+.feature-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+.feature-title {
+  font-size: 1.6rem;
+  margin: 0 0 0.8rem;
   color: var(--text-h);
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 1.1rem;
-  border-radius: 20px;
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-.link-button .btn-icon {
-  margin-right: 12px;
-  font-size: 1.4rem;
+.feature-desc {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+  margin-bottom: 2rem;
+  flex: 1;
 }
-.link-button:hover {
-  transform: translateY(-5px) scale(1.02);
-  border-color: var(--brand-orange);
+.feature-action {
+  font-weight: 700;
   color: var(--brand-red);
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  opacity: 0.8;
+  transform: translateX(0);
+  transition: all 0.3s ease;
 }
-.premium-button {
-  background: var(--brand-gradient);
-  color: white;
-  border: none;
+.feature-card:hover .feature-action {
+  opacity: 1;
+  transform: translateX(5px);
 }
-.premium-button:hover {
-  color: white;
+
+@media (prefers-color-scheme: dark) {
+  .feature-card::before {
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+  }
 }
 
 /* Footer Section */
