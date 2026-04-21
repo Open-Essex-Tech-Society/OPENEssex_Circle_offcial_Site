@@ -139,21 +139,37 @@ body {
 
 @media (max-width: 768px) {
   .navbar {
-    padding: 0.8rem 1rem;
-    width: calc(100% - 20px);
-    border-radius: 20px; /* More squarish pill on mobile */
-    flex-wrap: wrap;
+    padding: 0.6rem 1rem;
+    width: calc(100% - 16px);
+    border-radius: 100px; /* Keep the sleek pill shape */
+    flex-wrap: nowrap; /* Force single horizontal row */
     gap: 1rem;
+  }
+  .navbar-brand a span {
+    display: none; /* Hide text on mobile to save space */
+  }
+  .navbar-logo {
+    height: 35px;
+    width: 35px;
   }
   .navbar-scroll-area {
-    order: 3; /* Move links to bottom row */
-    width: 100%;
+    order: unset;
+    flex: 1;
     justify-content: flex-start;
     overflow-x: auto;
-    padding-bottom: 0.5rem;
+    padding-bottom: 0;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+  }
+  .navbar-scroll-area::-webkit-scrollbar {
+    display: none; /* Safari/Chrome */
   }
   .navbar-links {
-    gap: 1rem;
+    gap: 1.2rem;
+  }
+  .navbar-auth .btn {
+    padding: 6px 12px;
+    font-size: 0.85rem;
   }
 }
 
