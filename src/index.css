@@ -580,6 +580,9 @@ code {
 .tag-youtube { background: #ff0000; color: white; }
 .tag-news { background: #1da1f2; color: white; }
 .tag-other { background: var(--text-muted); color: white; }
+.tag-planning { background: linear-gradient(135deg, #6366f1, #818cf8); color: white; }
+.tag-in-progress { background: linear-gradient(135deg, #f59e0b, #fbbf24); color: #1a1a2e; }
+.tag-completed { background: linear-gradient(135deg, #10b981, #34d399); color: white; }
 .author-date {
   font-size: 0.9rem;
   color: var(--text-muted);

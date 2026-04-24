@@ -9,6 +9,7 @@ import Documents from './pages/Documents';
 import Guides from './pages/Guides';
 import Books from './pages/Books';
 import Timeline from './pages/Timeline';
+import Projects from './pages/Projects';
 import './App.css';
 
 // エラー境界用の簡易コンポーネント
@@ -21,8 +22,16 @@ function ErrorBoundary({ children }: { children: React.ReactNode }) {
   }
 }
 
-function ProtectedRoute({ children }: { children: React.ReactNode, isLoggedIn: boolean, isLoading: boolean }) {
-  // ログイン機能を一時的に無効化し、常にコンテンツを表示
+function ProtectedRoute({ children, isLoggedIn, isLoading }: { children: React.ReactNode, isLoggedIn: boolean, isLoading: boolean }) {
+  if (isLoading) return <div className="page-container"><p>認証状態を確認中...</p></div>;
+  if (!isLoggedIn) return (
+    <div className="page-container" style={{ textAlign: 'center', marginTop: '4rem' }}>
+      <h2>ログインが必要です</h2>
+      <p style={{ marginTop: '1rem', color: 'var(--text-color)' }}>
+        このページを閲覧するには、右上の「ログイン」ボタンからGoogleアカウントでログインしてください。
+      </p>
+    </div>
+  );
   return <>{children}</>;
 }
 
@@ -53,6 +62,7 @@ function App() {
             <Route path="/guides" element={<ProtectedRoute isLoggedIn={!!user} isLoading={isLoading}><Guides /></ProtectedRoute>} />
             <Route path="/books" element={<ProtectedRoute isLoggedIn={!!user} isLoading={isLoading}><Books /></ProtectedRoute>} />
             <Route path="/timeline" element={<ProtectedRoute isLoggedIn={!!user} isLoading={isLoading}><Timeline /></ProtectedRoute>} />
+            <Route path="/projects" element={<ProtectedRoute isLoggedIn={!!user} isLoading={isLoading}><Projects /></ProtectedRoute>} />
           </Routes>
         </ErrorBoundary>
       </main>

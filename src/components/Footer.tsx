@@ -10,6 +10,7 @@ export default function Footer() {
             <li><Link to="/">Home</Link></li>
             <li><Link to="/timeline">最新情報・タイムライン</Link></li>
             <li><Link to="/documents">課題・資料ポータル</Link></li>
+            <li><Link to="/projects">企画セクション</Link></li>
             <li><Link to="/guides">エキスパートガイド</Link></li>
             <li><Link to="/books">おすすめ本</Link></li>
           </ul>

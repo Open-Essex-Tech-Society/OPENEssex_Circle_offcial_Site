@@ -44,6 +44,17 @@ export default function Home() {
             </div>
           </Link>
 
+          <Link to="/projects" className="feature-card glass-panel highlight-card">
+            <div className="feature-icon-wrapper">
+              <span className="feature-icon">💡</span>
+            </div>
+            <div className="feature-content">
+              <h3 className="feature-title">企画セクション</h3>
+              <p className="feature-desc">新しい企画を提案・共有して、みんなで実現しよう</p>
+              <span className="feature-action">提案する →</span>
+            </div>
+          </Link>
+
           <Link to="/guides" className="feature-card glass-panel">
             <div className="feature-icon-wrapper">
               <span className="feature-icon">🧭</span>
