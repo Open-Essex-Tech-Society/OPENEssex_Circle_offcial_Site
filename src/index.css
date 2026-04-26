@@ -866,88 +866,100 @@ code {
   border: 2px solid var(--brand-orange);
 }
 
-/* ========== Members Page ========== */
-.members-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.5rem;
-  margin-top: 2rem;
-}
-.member-card {
+/* ========== Members List ========== */
+.members-list {
   display: flex;
   flex-direction: column;
+  gap: 0.8rem;
+  margin-top: 2rem;
+}
+.member-row {
+  display: flex;
   align-items: center;
-  padding: 2rem 1.5rem;
+  gap: 1.2rem;
+  padding: 1rem 1.5rem;
   text-decoration: none;
-  text-align: center;
   cursor: pointer;
-  border-radius: 24px;
+  border-radius: 16px;
+  transition: all 0.3s ease;
 }
-.member-card:hover {
+.member-row:hover {
   border-color: var(--brand-red);
+  transform: translateX(6px);
 }
-.member-avatar-wrapper {
-  margin-bottom: 1rem;
+.member-row-avatar {
+  flex-shrink: 0;
 }
-.member-avatar {
-  width: 80px;
-  height: 80px;
+.member-row-img {
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid var(--brand-red);
-  transition: transform 0.3s ease;
+  border: 2px solid var(--brand-red);
 }
-.member-card:hover .member-avatar {
-  transform: scale(1.1);
-}
-.member-avatar-placeholder {
-  width: 80px;
-  height: 80px;
+.member-row-placeholder {
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   background: var(--brand-gradient);
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2rem;
-  font-weight: 700;
-  border: 3px solid transparent;
-  transition: transform 0.3s ease;
-}
-.member-card:hover .member-avatar-placeholder {
-  transform: scale(1.1);
-}
-.member-info {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.4rem;
-}
-.member-name {
   font-size: 1.2rem;
+  font-weight: 700;
+}
+.member-row-info {
+  flex: 1;
+  min-width: 0;
+}
+.member-row-top {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+.member-row-name {
+  font-size: 1.05rem;
   margin: 0;
   color: var(--text-h);
 }
 .member-role {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: var(--brand-red);
   font-weight: 600;
-  padding: 2px 12px;
+  padding: 2px 10px;
   background: rgba(217, 37, 67, 0.08);
   border-radius: 100px;
+  white-space: nowrap;
 }
-.member-bio {
-  font-size: 0.9rem;
+.member-row-bio {
+  font-size: 0.85rem;
   color: var(--text-muted);
-  margin: 0.3rem 0 0;
-  line-height: 1.5;
+  margin: 0.2rem 0 0;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.member-skills {
+.member-row-skills {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  justify-content: center;
-  margin-top: 0.5rem;
+  gap: 5px;
+  flex-shrink: 0;
+}
+.member-row-arrow {
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: all 0.3s ease;
+}
+.member-row:hover .member-row-arrow {
+  opacity: 1;
+  transform: translateX(0);
+  color: var(--brand-red);
 }
 .skill-tag {
   padding: 3px 10px;
@@ -973,10 +985,20 @@ code {
   transform: none;
 }
 .profile-banner {
-  height: 140px;
+  height: 160px;
   background: var(--brand-gradient);
+  background-image: url('/OpenEssex.png');
+  background-size: cover;
+  background-position: center 15%;
   border-radius: 24px 24px 0 0;
-  opacity: 0.8;
+  position: relative;
+}
+.profile-banner::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.55) 100%);
+  border-radius: 24px 24px 0 0;
 }
 .profile-main-info {
   display: flex;
@@ -1206,17 +1228,22 @@ code {
 
 /* Responsive adjustments for new pages */
 @media (max-width: 768px) {
-  .members-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+  .member-row {
+    flex-wrap: wrap;
+    padding: 1rem;
   }
-  .member-card {
-    padding: 1.5rem 1rem;
+  .member-row-skills {
+    width: 100%;
+    margin-top: 0.3rem;
   }
-  .member-avatar, .member-avatar-placeholder {
-    width: 60px;
-    height: 60px;
-    font-size: 1.5rem;
+  .member-row-arrow {
+    display: none;
+  }
+  .member-row-bio {
+    white-space: normal;
+  }
+  .profile-banner {
+    height: 120px;
   }
   .profile-main-info {
     flex-direction: column;
@@ -1239,11 +1266,5 @@ code {
   }
   .mypage-section {
     padding: 1.5rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .members-grid {
-    grid-template-columns: 1fr;
   }
 }

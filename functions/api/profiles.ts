@@ -4,11 +4,15 @@ interface Env {
 
 export const onRequestGet: PagesFunction<Env> = async (context) => {
   const { DB } = context.env;
+  // Only fetch fields needed for the list view (exclude heavy avatar_url for list)
   const { results } = await DB.prepare(
-    "SELECT uid, display_name, avatar_url, bio, role, skills, linkedin_url, github_url, website_url, created_at FROM profiles ORDER BY created_at ASC"
+    `SELECT uid, display_name,
+       CASE WHEN length(avatar_url) > 200 THEN '' ELSE avatar_url END as avatar_url,
+       bio, role, skills, created_at
+     FROM profiles ORDER BY created_at ASC`
   ).all();
   return Response.json(results, {
-    headers: { 'Cache-Control': 'public, max-age=30, s-maxage=60' }
+    headers: { 'Cache-Control': 'public, max-age=60, s-maxage=120' }
   });
 };
 
@@ -18,6 +22,12 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
   if (!data.uid || !data.display_name) {
     return new Response("Missing uid or display_name", { status: 400 });
+  }
+
+  // Reject avatar_url if base64 data is too large (>50KB string = ~37KB image)
+  const avatarUrl = (data.avatar_url || '');
+  if (avatarUrl.startsWith('data:') && avatarUrl.length > 50000) {
+    return new Response("Avatar image too large. Please use a smaller image.", { status: 400 });
   }
 
   // Upsert: create or update profile
@@ -39,13 +49,13 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     data.uid,
     data.display_name,
     data.email || '',
-    data.avatar_url || '',
-    data.bio || '',
-    data.role || 'Member',
-    data.skills || '',
-    data.linkedin_url || '',
-    data.github_url || '',
-    data.website_url || ''
+    avatarUrl,
+    (data.bio || '').slice(0, 500), // Limit bio length
+    (data.role || 'Member').slice(0, 50),
+    (data.skills || '').slice(0, 200),
+    (data.linkedin_url || '').slice(0, 200),
+    (data.github_url || '').slice(0, 200),
+    (data.website_url || '').slice(0, 200)
   ).run();
 
   return new Response("Success", { status: 201 });

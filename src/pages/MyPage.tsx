@@ -152,24 +152,28 @@ export default function MyPage() {
                   onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (!file) return;
-                    if (file.size > 500 * 1024) {
-                      alert('画像サイズは500KB以下にしてください。');
+                    if (file.size > 300 * 1024) {
+                      alert('画像サイズは300KB以下にしてください。');
                       return;
                     }
                     const reader = new FileReader();
                     reader.onloadend = () => {
-                      // Resize image to save space
                       const img = new Image();
                       img.onload = () => {
                         const canvas = document.createElement('canvas');
-                        const maxSize = 200;
+                        const maxSize = 128; // Small to save D1 storage
                         let w = img.width, h = img.height;
                         if (w > h) { h = (h / w) * maxSize; w = maxSize; }
                         else { w = (w / h) * maxSize; h = maxSize; }
                         canvas.width = w;
                         canvas.height = h;
                         canvas.getContext('2d')!.drawImage(img, 0, 0, w, h);
-                        const dataUrl = canvas.toDataURL('image/webp', 0.8);
+                        const dataUrl = canvas.toDataURL('image/webp', 0.5);
+                        // Final check: reject if base64 is still too large (>30KB)
+                        if (dataUrl.length > 30000) {
+                          alert('画像が大きすぎます。もっと小さい画像を選んでください。');
+                          return;
+                        }
                         updateField('avatar_url', dataUrl);
                       };
                       img.src = reader.result as string;

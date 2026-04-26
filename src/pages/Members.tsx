@@ -28,37 +28,40 @@ export default function Members() {
   return (
     <div className="page-container">
       <h1>メンバー一覧</h1>
-      <p className="page-subtitle">Open Essexのメンバーたち</p>
+      <p className="page-subtitle">Open Essexのメンバーたち（{members.length}人）</p>
 
       {isLoading ? (
         <p style={{ textAlign: 'center' }}>読み込み中...</p>
       ) : members.length === 0 ? (
         <p className="empty-state">まだメンバーが登録されていません。</p>
       ) : (
-        <div className="members-grid">
+        <div className="members-list">
           {members.map(member => (
-            <Link to={`/profile/${member.uid}`} key={member.uid} className="member-card glass-panel">
-              <div className="member-avatar-wrapper">
+            <Link to={`/profile/${member.uid}`} key={member.uid} className="member-row glass-panel">
+              <div className="member-row-avatar">
                 {member.avatar_url ? (
-                  <img src={member.avatar_url} alt={member.display_name} className="member-avatar" />
+                  <img src={member.avatar_url} alt={member.display_name} className="member-row-img" />
                 ) : (
-                  <div className="member-avatar-placeholder">
+                  <div className="member-row-placeholder">
                     {member.display_name.charAt(0).toUpperCase()}
                   </div>
                 )}
               </div>
-              <div className="member-info">
-                <h3 className="member-name">{member.display_name}</h3>
-                <span className="member-role">{member.role}</span>
-                {member.bio && <p className="member-bio">{member.bio.length > 80 ? member.bio.slice(0, 80) + '...' : member.bio}</p>}
-                {member.skills && (
-                  <div className="member-skills">
-                    {member.skills.split(',').slice(0, 3).map((skill, i) => (
-                      <span key={i} className="skill-tag">{skill.trim()}</span>
-                    ))}
-                  </div>
-                )}
+              <div className="member-row-info">
+                <div className="member-row-top">
+                  <h3 className="member-row-name">{member.display_name}</h3>
+                  <span className="member-role">{member.role}</span>
+                </div>
+                {member.bio && <p className="member-row-bio">{member.bio.length > 100 ? member.bio.slice(0, 100) + '...' : member.bio}</p>}
               </div>
+              {member.skills && (
+                <div className="member-row-skills">
+                  {member.skills.split(',').slice(0, 3).map((skill, i) => (
+                    <span key={i} className="skill-tag">{skill.trim()}</span>
+                  ))}
+                </div>
+              )}
+              <span className="member-row-arrow">→</span>
             </Link>
           ))}
         </div>

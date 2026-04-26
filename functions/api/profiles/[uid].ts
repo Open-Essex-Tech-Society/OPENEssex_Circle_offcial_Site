@@ -14,5 +14,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     return new Response("Profile not found", { status: 404 });
   }
 
-  return Response.json(result);
+  return Response.json(result, {
+    headers: { 'Cache-Control': 'public, max-age=60, s-maxage=120' }
+  });
 };
