@@ -183,9 +183,13 @@ export default function Timeline() {
               <button className={`btn btn-like ${localStorage.getItem(`liked_timeline_${item.id}`) ? 'liked' : ''}`} onClick={() => handleLike(item.id)}>
                 <span className="icon">♥</span> {item.likes || 0}
               </button>
-              <div className="spacer"></div>
-              <button className="btn btn-edit" onClick={() => handleEdit(item)}>編集</button>
-              <button className="btn btn-delete" onClick={() => handleDelete(item.id)}>削除</button>
+              {userName === item.author && (
+                <>
+                  <div className="spacer"></div>
+                  <button className="btn btn-edit" onClick={() => handleEdit(item)}>編集</button>
+                  <button className="btn btn-delete" onClick={() => handleDelete(item.id)}>削除</button>
+                </>
+              )}
             </div>
           </div>
         ))}

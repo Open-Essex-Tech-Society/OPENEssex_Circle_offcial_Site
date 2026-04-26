@@ -132,9 +132,13 @@ export default function Documents() {
               <button className={`btn btn-like ${localStorage.getItem(`liked_documents_${doc.id}`) ? 'liked' : ''}`} onClick={() => handleLike(doc.id)}>
                 <span className="icon">♥</span> {doc.likes || 0}
               </button>
-              <div className="spacer"></div>
-              <button className="btn btn-edit" onClick={() => handleEdit(doc)}>編集</button>
-              <button className="btn btn-delete" onClick={() => handleDelete(doc.id)}>削除</button>
+              {userName === doc.author && (
+                <>
+                  <div className="spacer"></div>
+                  <button className="btn btn-edit" onClick={() => handleEdit(doc)}>編集</button>
+                  <button className="btn btn-delete" onClick={() => handleDelete(doc.id)}>削除</button>
+                </>
+              )}
             </div>
           </div>
         ))}
