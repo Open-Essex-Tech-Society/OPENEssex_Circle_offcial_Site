@@ -18,8 +18,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return new Response("Missing fields", { status: 400 });
   }
 
-  await DB.prepare("INSERT INTO documents (title, content, author) VALUES (?, ?, ?)")
-    .bind(data.title, data.content, data.author)
+  await DB.prepare("INSERT INTO documents (title, content, author, co_authors) VALUES (?, ?, ?, ?)")
+    .bind(data.title, data.content, data.author, data.co_authors || '')
     .run();
 
   return new Response("Success", { status: 201 });

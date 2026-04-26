@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 let globalProfiles: { [name: string]: string } | null = null;
 let fetchingPromise: Promise<void> | null = null;
 
-export default function AuthorBadge({ author, date }: { author: string, date?: string }) {
+export default function AuthorBadge({ author, date, coAuthors }: { author: string, date?: string, coAuthors?: string }) {
   const [avatar, setAvatar] = useState<string | null>(null);
 
   useEffect(() => {
@@ -43,7 +43,9 @@ export default function AuthorBadge({ author, date }: { author: string, date?: s
         </div>
       )}
       <div className="author-badge-info">
-        <span className="author-badge-name">{author}</span>
+        <span className="author-badge-name">
+          {author} {coAuthors && <span className="co-authors-text" style={{ fontSize: '0.8rem', fontWeight: 'normal', opacity: 0.8 }}>with {coAuthors}</span>}
+        </span>
         {date && <span className="author-badge-date">{new Date(date).toLocaleDateString('ja-JP')}</span>}
       </div>
     </div>

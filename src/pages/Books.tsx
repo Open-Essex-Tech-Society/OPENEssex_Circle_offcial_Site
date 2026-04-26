@@ -10,6 +10,7 @@ interface Book {
   author: string;
   description: string;
   poster?: string;
+  co_authors?: string;
   link?: string;
   created_at: string;
   likes?: number;
@@ -24,6 +25,7 @@ export default function Books() {
   const [bookAuthor, setBookAuthor] = useState('');
   const [description, setDescription] = useState('');
   const [link, setLink] = useState('');
+  const [coAuthors, setCoAuthors] = useState('');
   const [editId, setEditId] = useState<number | null>(null);
 
   const fetchBooks = async () => {
@@ -45,7 +47,7 @@ export default function Books() {
       if (editId) {
         const res = await fetch(`/api/books/${editId}`, {
           method: 'PUT',
-          body: JSON.stringify({ action: 'edit', title, description }),
+          body: JSON.stringify({ action: 'edit', title, description, co_authors: coAuthors }),
           headers: { 'Content-Type': 'application/json' }
         });
         if (res.ok) fetchBooks();
@@ -53,7 +55,7 @@ export default function Books() {
       } else {
         const res = await fetch('/api/books', {
           method: 'POST',
-          body: JSON.stringify({ title, author: bookAuthor, description, link, poster: userName }),
+          body: JSON.stringify({ title, author: bookAuthor, description, link, poster: userName, co_authors: coAuthors }),
           headers: { 'Content-Type': 'application/json' }
         });
         if (res.ok) fetchBooks();
@@ -62,6 +64,7 @@ export default function Books() {
       setBookAuthor('');
       setDescription('');
       setLink('');
+      setCoAuthors('');
       setShowForm(false);
     } finally {
       setIsSubmitting(false);
@@ -73,7 +76,8 @@ export default function Books() {
     setTitle(book.title);
     setBookAuthor(book.author);
     setDescription(book.description);
-    setLink(book.link);
+    setLink(book.link || '');
+    setCoAuthors(book.co_authors || '');
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -105,7 +109,7 @@ export default function Books() {
 
       <button onClick={() => {
         setShowForm(!showForm);
-        if (editId) { setEditId(null); setTitle(''); setBookAuthor(''); setDescription(''); setLink(''); }
+        if (editId) { setEditId(null); setTitle(''); setBookAuthor(''); setDescription(''); setLink(''); setCoAuthors(''); }
       }} className="btn btn-primary" style={{ marginBottom: '2rem' }}>
         {showForm ? 'キャンセル' : '本を推薦する'}
       </button>
@@ -115,6 +119,7 @@ export default function Books() {
           <div className="auto-author-badge" style={{ marginBottom: '1rem' }}>推薦者: {userName}</div>
           <input type="text" placeholder="本のタイトル" value={title} onChange={e => setTitle(e.target.value)} required className="input-field" />
           {!editId && <input type="text" placeholder="著者名" value={bookAuthor} onChange={e => setBookAuthor(e.target.value)} required className="input-field" />}
+          <input type="text" placeholder="共同推薦者の表示名（カンマ区切り。例: user1, user2）" value={coAuthors} onChange={e => setCoAuthors(e.target.value)} className="input-field" />
           <textarea placeholder="推薦理由・説明（Markdown対応）" value={description} onChange={e => setDescription(e.target.value)} required rows={8} className="input-field" />
           {!editId && <input type="url" placeholder="関連リンク (URL)" value={link} onChange={e => setLink(e.target.value)} className="input-field" />}
           <p style={{ fontSize: '0.8rem', margin: '-0.5rem 0 1rem', color: 'var(--text-muted)' }}>※Markdown記法が使えます</p>
@@ -131,7 +136,7 @@ export default function Books() {
             <p className="meta" style={{ marginBottom: '0.5rem' }}>著者: {book.author}</p>
             <div className="meta" style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>推薦者:</span>
-               <AuthorBadge author={book.poster || ''} date={book.created_at} />
+               <AuthorBadge author={book.poster || ''} date={book.created_at} coAuthors={book.co_authors} />
             </div>
             <div className="content" style={{ padding: '1rem 0', marginBottom: '1rem' }}>
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{book.description}</ReactMarkdown>

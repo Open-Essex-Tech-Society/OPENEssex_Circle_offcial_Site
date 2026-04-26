@@ -1,0 +1,5 @@
+ALTER TABLE documents ADD COLUMN co_authors TEXT DEFAULT '';
+ALTER TABLE guides ADD COLUMN co_authors TEXT DEFAULT '';
+ALTER TABLE books ADD COLUMN co_authors TEXT DEFAULT '';
+ALTER TABLE timeline ADD COLUMN co_authors TEXT DEFAULT '';
+ALTER TABLE projects ADD COLUMN co_authors TEXT DEFAULT '';

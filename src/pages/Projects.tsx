@@ -7,6 +7,7 @@ interface ProjectItem {
   title: string;
   description: string;
   author: string;
+  co_authors?: string;
   status: string;
   created_at: string;
   likes?: number;
@@ -21,6 +22,7 @@ export default function Projects() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState('planning');
+  const [coAuthors, setCoAuthors] = useState('');
 
   const [editId, setEditId] = useState<number | null>(null);
 
@@ -43,7 +45,7 @@ export default function Projects() {
       if (editId) {
         const res = await fetch(`/api/projects/${editId}`, {
           method: 'PUT',
-          body: JSON.stringify({ action: 'edit', title, description, status }),
+          body: JSON.stringify({ action: 'edit', title, description, status, co_authors: coAuthors }),
           headers: { 'Content-Type': 'application/json' }
         });
         if (res.ok) fetchItems();
@@ -51,7 +53,7 @@ export default function Projects() {
       } else {
         const res = await fetch('/api/projects', {
           method: 'POST',
-          body: JSON.stringify({ title, description, author: userName, status }),
+          body: JSON.stringify({ title, description, author: userName, status, co_authors: coAuthors }),
           headers: { 'Content-Type': 'application/json' }
         });
         if (res.ok) fetchItems();
@@ -59,6 +61,7 @@ export default function Projects() {
       setTitle('');
       setDescription('');
       setStatus('planning');
+      setCoAuthors('');
       setShowForm(false);
     } finally {
       setIsSubmitting(false);
@@ -70,6 +73,7 @@ export default function Projects() {
     setTitle(item.title);
     setDescription(item.description);
     setStatus(item.status);
+    setCoAuthors(item.co_authors || '');
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -101,7 +105,7 @@ export default function Projects() {
 
       <button onClick={() => {
         setShowForm(!showForm);
-        if (editId) { setEditId(null); setTitle(''); setDescription(''); setStatus('planning'); }
+        if (editId) { setEditId(null); setTitle(''); setDescription(''); setStatus('planning'); setCoAuthors(''); }
       }} className="btn btn-primary" style={{ marginBottom: '2rem' }}>
         {showForm ? 'キャンセル' : '新規企画を提案する'}
       </button>
@@ -120,6 +124,7 @@ export default function Projects() {
           </div>
 
           <input type="text" placeholder="企画のタイトル" value={title} onChange={e => setTitle(e.target.value)} required className="input-field" />
+          <input type="text" placeholder="共同提案者の表示名（カンマ区切り。例: user1, user2）" value={coAuthors} onChange={e => setCoAuthors(e.target.value)} className="input-field" />
 
           <textarea placeholder="企画の詳細（目的、必要なもの、協力してほしいことなど）" value={description} onChange={e => setDescription(e.target.value)} rows={6} className="input-field" required />
 
@@ -137,7 +142,7 @@ export default function Projects() {
                 {item.status === 'planning' ? '企画中' : item.status === 'in-progress' ? '進行中' : '完了'}
               </span>
               <div style={{ marginLeft: 'auto' }}>
-                <AuthorBadge author={item.author} date={item.created_at} />
+                <AuthorBadge author={item.author} date={item.created_at} coAuthors={item.co_authors} />
               </div>
             </div>
 

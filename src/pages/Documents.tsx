@@ -9,6 +9,7 @@ interface Document {
   title: string;
   content: string;
   author: string;
+  co_authors?: string;
   created_at: string;
   likes?: number;
 }
@@ -20,7 +21,7 @@ export default function Documents() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-
+  const [coAuthors, setCoAuthors] = useState('');
   const [editId, setEditId] = useState<number | null>(null);
 
   const fetchDocuments = async () => {
@@ -42,7 +43,7 @@ export default function Documents() {
       if (editId) {
         const res = await fetch(`/api/documents/${editId}`, {
           method: 'PUT',
-          body: JSON.stringify({ action: 'edit', title, content }),
+          body: JSON.stringify({ action: 'edit', title, content, co_authors: coAuthors }),
           headers: { 'Content-Type': 'application/json' }
         });
         if (res.ok) fetchDocuments();
@@ -50,13 +51,14 @@ export default function Documents() {
       } else {
         const res = await fetch('/api/documents', {
           method: 'POST',
-          body: JSON.stringify({ title, content, author: userName }),
+          body: JSON.stringify({ title, content, author: userName, co_authors: coAuthors }),
           headers: { 'Content-Type': 'application/json' }
         });
         if (res.ok) fetchDocuments();
       }
       setTitle('');
       setContent('');
+      setCoAuthors('');
       setShowForm(false);
     } finally {
       setIsSubmitting(false);
@@ -67,6 +69,7 @@ export default function Documents() {
     setEditId(doc.id);
     setTitle(doc.title);
     setContent(doc.content);
+    setCoAuthors(doc.co_authors || '');
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -98,7 +101,7 @@ export default function Documents() {
 
       <button onClick={() => {
         setShowForm(!showForm);
-        if (editId) { setEditId(null); setTitle(''); setContent(''); }
+        if (editId) { setEditId(null); setTitle(''); setContent(''); setCoAuthors(''); }
       }} className="btn btn-primary" style={{ marginBottom: '2rem' }}>
         {showForm ? 'キャンセル' : '新規投稿'}
       </button>
@@ -109,6 +112,7 @@ export default function Documents() {
             <input type="text" placeholder="タイトル" value={title} onChange={e => setTitle(e.target.value)} required className="input-field" />
             <div className="auto-author-badge">投稿者: {userName}</div>
           </div>
+          <input type="text" placeholder="共同投稿者の表示名（カンマ区切り。例: user1, user2）" value={coAuthors} onChange={e => setCoAuthors(e.target.value)} className="input-field" />
           <textarea placeholder="内容・説明（Markdown対応）" value={content} onChange={e => setContent(e.target.value)} required rows={10} className="input-field" />
           <p style={{ fontSize: '0.8rem', marginTop: '-0.5rem', marginBottom: '1rem', color: 'var(--text-muted)' }}>※Markdown記法（# 見出し, * リスト, **太字** など）が使えます</p>
           <button type="submit" disabled={isSubmitting} className="btn btn-primary">
@@ -122,7 +126,7 @@ export default function Documents() {
           <div key={doc.id} className="card glass-panel">
             <h2>{doc.title}</h2>
             <div className="meta" style={{ marginBottom: '1rem' }}>
-              <AuthorBadge author={doc.author} date={doc.created_at} />
+              <AuthorBadge author={doc.author} date={doc.created_at} coAuthors={doc.co_authors} />
             </div>
             <div className="content" style={{ padding: '1rem 0' }}>
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{doc.content}</ReactMarkdown>

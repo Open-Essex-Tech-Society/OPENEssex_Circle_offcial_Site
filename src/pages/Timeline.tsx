@@ -9,6 +9,7 @@ interface TimelineItem {
   title: string;
   description: string;
   author: string;
+  co_authors?: string;
   created_at: string;
   likes?: number;
 }
@@ -32,6 +33,7 @@ export default function Timeline() {
   const [url, setUrl] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [coAuthors, setCoAuthors] = useState('');
 
   const [editId, setEditId] = useState<number | null>(null);
 
@@ -54,7 +56,7 @@ export default function Timeline() {
       if (editId) {
         const res = await fetch(`/api/timeline/${editId}`, {
           method: 'PUT',
-          body: JSON.stringify({ action: 'edit', title, description, url }),
+          body: JSON.stringify({ action: 'edit', title, description, url, co_authors: coAuthors }),
           headers: { 'Content-Type': 'application/json' }
         });
         if (res.ok) fetchItems();
@@ -62,7 +64,7 @@ export default function Timeline() {
       } else {
         const res = await fetch('/api/timeline', {
           method: 'POST',
-          body: JSON.stringify({ type, url, title, description, author: userName }),
+          body: JSON.stringify({ type, url, title, description, author: userName, co_authors: coAuthors }),
           headers: { 'Content-Type': 'application/json' }
         });
         if (res.ok) fetchItems();
@@ -71,6 +73,7 @@ export default function Timeline() {
       setUrl('');
       setTitle('');
       setDescription('');
+      setCoAuthors('');
       setShowForm(false);
     } finally {
       setIsSubmitting(false);
@@ -83,6 +86,7 @@ export default function Timeline() {
     setUrl(item.url);
     setTitle(item.title);
     setDescription(item.description);
+    setCoAuthors(item.co_authors || '');
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -120,7 +124,7 @@ export default function Timeline() {
 
       <button onClick={() => {
         setShowForm(!showForm);
-        if (editId) { setEditId(null); setUrl(''); setTitle(''); setDescription(''); setType('youtube'); }
+        if (editId) { setEditId(null); setUrl(''); setTitle(''); setDescription(''); setType('youtube'); setCoAuthors(''); }
       }} className="btn btn-primary" style={{ marginBottom: '2rem' }}>
         {showForm ? 'キャンセル' : '新規共有'}
       </button>
@@ -138,6 +142,7 @@ export default function Timeline() {
 
           <input type="url" placeholder="URL (例: https://youtube.com/... or https://...)" value={url} onChange={e => setUrl(e.target.value)} required className="input-field" />
           <input type="text" placeholder="タイトル" value={title} onChange={e => setTitle(e.target.value)} required className="input-field" />
+          <input type="text" placeholder="共同共有者の表示名（カンマ区切り。例: user1, user2）" value={coAuthors} onChange={e => setCoAuthors(e.target.value)} className="input-field" />
 
           <textarea placeholder="説明やコメント" value={description} onChange={e => setDescription(e.target.value)} rows={4} className="input-field" />
 
@@ -153,7 +158,7 @@ export default function Timeline() {
             <div className="timeline-header">
               <span className={`tag tag-${item.type}`}>{item.type === 'youtube' ? 'YouTube' : item.type === 'news' ? 'News' : 'Link'}</span>
               <div style={{ marginLeft: 'auto' }}>
-                <AuthorBadge author={item.author} date={item.created_at} />
+                <AuthorBadge author={item.author} date={item.created_at} coAuthors={item.co_authors} />
               </div>
             </div>
 

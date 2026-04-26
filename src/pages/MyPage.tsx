@@ -12,6 +12,13 @@ interface ProfileForm {
   website_url: string;
 }
 
+interface ActivityItem {
+  id: number;
+  title: string;
+  section: string;
+  created_at: string;
+}
+
 export default function MyPage() {
   const { user, updateLocalProfile } = useAuth();
   const [form, setForm] = useState<ProfileForm>({
@@ -28,6 +35,8 @@ export default function MyPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [isNew, setIsNew] = useState(false);
+  const { userName } = useAuth();
+  const [activities, setActivities] = useState<ActivityItem[]>([]);
 
   useEffect(() => {
     if (!user) return;
@@ -62,7 +71,14 @@ export default function MyPage() {
         }
       })
       .catch(() => setIsLoading(false));
-  }, [user]);
+      
+    if (userName) {
+      fetch(`/api/user-activity/${encodeURIComponent(userName)}`)
+        .then(res => res.json())
+        .then(data => setActivities(data as ActivityItem[]))
+        .catch(console.error);
+    }
+  }, [user, userName]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -293,6 +309,24 @@ export default function MyPage() {
           {isSaving ? '保存中...' : isNew ? 'プロフィールを作成' : 'プロフィールを更新'}
         </button>
       </form>
+
+      {!isNew && activities.length > 0 && (
+        <div className="mypage-section glass-panel" style={{ marginTop: '2rem' }}>
+          <h3>あなたの活動履歴</h3>
+          <p className="page-subtitle" style={{ marginBottom: '1rem' }}>これまで提案・共有した項目</p>
+          <div className="activity-list">
+            {activities.map((act, index) => (
+              <div key={`${act.section}-${act.id}-${index}`} className="activity-item" style={{ padding: '0.8rem', borderBottom: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <span className={`tag tag-${act.section}`} style={{ fontSize: '0.7rem', minWidth: '80px', textAlign: 'center' }}>
+                  {act.section === 'projects' ? '企画' : act.section === 'documents' ? '資料' : act.section === 'timeline' ? 'TL' : act.section === 'guides' ? 'ガイド' : 'おすすめ本'}
+                </span>
+                <span style={{ fontWeight: 600, flex: 1 }}>{act.title}</span>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{new Date(act.created_at).toLocaleDateString('ja-JP')}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

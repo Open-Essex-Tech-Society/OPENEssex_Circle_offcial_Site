@@ -11,7 +11,7 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
     await DB.prepare("UPDATE timeline SET likes = COALESCE(likes, 0) + 1 WHERE id = ?").bind(id).run();
     return new Response("Liked", { status: 200 });
   } else if (data.action === "edit") {
-    await DB.prepare("UPDATE timeline SET title = ?, description = ?, url = ? WHERE id = ?").bind(data.title, data.description, data.url, id).run();
+    await DB.prepare("UPDATE timeline SET title = ?, description = ?, url = ?, co_authors = ? WHERE id = ?").bind(data.title, data.description, data.url, data.co_authors || '', id).run();
     return new Response("Updated", { status: 200 });
   }
   return new Response("Bad Request", { status: 400 });

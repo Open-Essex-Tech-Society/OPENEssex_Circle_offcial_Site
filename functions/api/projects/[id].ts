@@ -10,8 +10,8 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
   if (data.action === 'like') {
     await DB.prepare("UPDATE projects SET likes = likes + 1 WHERE id = ?").bind(id).run();
   } else if (data.action === 'edit') {
-    await DB.prepare("UPDATE projects SET title = ?, description = ?, status = ? WHERE id = ?")
-      .bind(data.title, data.description, data.status, id)
+    await DB.prepare("UPDATE projects SET title = ?, description = ?, status = ?, co_authors = ? WHERE id = ?")
+      .bind(data.title, data.description, data.status, data.co_authors || '', id)
       .run();
   } else {
     return new Response("Invalid action", { status: 400 });

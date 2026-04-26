@@ -9,6 +9,7 @@ interface Guide {
   title: string;
   content: string;
   poster?: string;
+  co_authors?: string;
   created_at: string;
   likes?: number;
 }
@@ -20,6 +21,7 @@ export default function Guides() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [coAuthors, setCoAuthors] = useState('');
   const [editId, setEditId] = useState<number | null>(null);
 
   const fetchGuides = async () => {
@@ -41,7 +43,7 @@ export default function Guides() {
       if (editId) {
         const res = await fetch(`/api/guides/${editId}`, {
           method: 'PUT',
-          body: JSON.stringify({ action: 'edit', title, content }),
+          body: JSON.stringify({ action: 'edit', title, content, co_authors: coAuthors }),
           headers: { 'Content-Type': 'application/json' }
         });
         if (res.ok) fetchGuides();
@@ -49,13 +51,14 @@ export default function Guides() {
       } else {
         const res = await fetch('/api/guides', {
           method: 'POST',
-          body: JSON.stringify({ title, content, poster: userName }),
+          body: JSON.stringify({ title, content, poster: userName, co_authors: coAuthors }),
           headers: { 'Content-Type': 'application/json' }
         });
         if (res.ok) fetchGuides();
       }
       setTitle('');
       setContent('');
+      setCoAuthors('');
       setShowForm(false);
     } finally {
       setIsSubmitting(false);
@@ -66,6 +69,7 @@ export default function Guides() {
     setEditId(guide.id);
     setTitle(guide.title);
     setContent(guide.content);
+    setCoAuthors(guide.co_authors || '');
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -97,7 +101,7 @@ export default function Guides() {
 
       <button onClick={() => {
         setShowForm(!showForm);
-        if (editId) { setEditId(null); setTitle(''); setContent(''); }
+        if (editId) { setEditId(null); setTitle(''); setContent(''); setCoAuthors(''); }
       }} className="btn btn-primary" style={{ marginBottom: '2rem' }}>
         {showForm ? 'キャンセル' : 'ガイドを投稿する'}
       </button>
@@ -106,6 +110,7 @@ export default function Guides() {
         <form onSubmit={handleSubmit} className="post-form glass-panel">
           <div className="auto-author-badge" style={{ marginBottom: '1rem' }}>投稿者: {userName}</div>
           <input type="text" placeholder="ガイドのタイトル" value={title} onChange={e => setTitle(e.target.value)} required className="input-field" />
+          <input type="text" placeholder="共同投稿者の表示名（カンマ区切り。例: user1, user2）" value={coAuthors} onChange={e => setCoAuthors(e.target.value)} className="input-field" />
           <textarea placeholder="ガイドの内容（Markdown対応）" value={content} onChange={e => setContent(e.target.value)} required rows={15} className="input-field" />
           <p style={{ fontSize: '0.8rem', marginTop: '-0.5rem', marginBottom: '1rem', color: 'var(--text-muted)' }}>※Markdown記法（# 見出し, * リスト, **太字** など）が使えます</p>
           <button type="submit" disabled={isSubmitting} className="btn btn-primary">
@@ -119,7 +124,7 @@ export default function Guides() {
           <div key={guide.id} className="card glass-panel">
             <h2>{guide.title}</h2>
             <div className="meta" style={{ marginBottom: '1rem' }}>
-              <AuthorBadge author={guide.poster || ''} date={guide.created_at} />
+              <AuthorBadge author={guide.poster || ''} date={guide.created_at} coAuthors={guide.co_authors} />
             </div>
             <div className="content" style={{ padding: '1rem 0' }}>
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{guide.content}</ReactMarkdown>
