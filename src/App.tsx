@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { auth } from './firebase';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -25,6 +26,9 @@ function ErrorBoundary({ children }: { children: React.ReactNode }) {
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
+  // If Firebase is not configured (dev/local mode), bypass auth and show the page
+  const isAuthDisabled = !auth;
+  if (isAuthDisabled) return <>{children}</>;
   if (isLoading) return <div className="page-container"><p>認証状態を確認中...</p></div>;
   if (!user) return <Navigate to="/login" replace />;
   return <>{children}</>;
