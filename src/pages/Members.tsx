@@ -84,7 +84,7 @@ export default function Members() {
                 </div>
                 {member.skills && (
                   <div className="member-row-skills">
-                    {member.skills.split(',').slice(0, 3).map((skill, i) => (
+                    {member.skills.split(',').filter((s: string) => s.trim()).map((skill: string, i: number) => (
                       <span key={i} className="skill-tag">{skill.trim()}</span>
                     ))}
                   </div>

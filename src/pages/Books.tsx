@@ -29,7 +29,7 @@ export default function Books() {
   const [editId, setEditId] = useState<number | null>(null);
 
   const fetchBooks = async () => {
-    const res = await fetch('/api/books');
+    const res = await fetch(`/api/books?t=${Date.now()}`, { cache: 'no-store' });
     const data = await res.json();
     setBooks(data as Book[]);
   };
@@ -50,7 +50,7 @@ export default function Books() {
           body: JSON.stringify({ action: 'edit', title, description, co_authors: coAuthors }),
           headers: { 'Content-Type': 'application/json' }
         });
-        if (res.ok) fetchBooks();
+        if (res.ok) await fetchBooks();
         setEditId(null);
       } else {
         const res = await fetch('/api/books', {
@@ -58,7 +58,7 @@ export default function Books() {
           body: JSON.stringify({ title, author: bookAuthor, description, link, poster: userName, co_authors: coAuthors }),
           headers: { 'Content-Type': 'application/json' }
         });
-        if (res.ok) fetchBooks();
+        if (res.ok) await fetchBooks();
       }
       setTitle('');
       setBookAuthor('');

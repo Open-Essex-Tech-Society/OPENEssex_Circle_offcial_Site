@@ -25,7 +25,7 @@ export default function Documents() {
   const [editId, setEditId] = useState<number | null>(null);
 
   const fetchDocuments = async () => {
-    const res = await fetch('/api/documents');
+    const res = await fetch(`/api/documents?t=${Date.now()}`, { cache: 'no-store' });
     const data = await res.json();
     setDocuments(data as Document[]);
   };
@@ -46,7 +46,7 @@ export default function Documents() {
           body: JSON.stringify({ action: 'edit', title, content, co_authors: coAuthors }),
           headers: { 'Content-Type': 'application/json' }
         });
-        if (res.ok) fetchDocuments();
+        if (res.ok) await fetchDocuments();
         setEditId(null);
       } else {
         const res = await fetch('/api/documents', {
@@ -54,7 +54,7 @@ export default function Documents() {
           body: JSON.stringify({ title, content, author: userName, co_authors: coAuthors }),
           headers: { 'Content-Type': 'application/json' }
         });
-        if (res.ok) fetchDocuments();
+        if (res.ok) await fetchDocuments();
       }
       setTitle('');
       setContent('');

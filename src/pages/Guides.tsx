@@ -25,7 +25,7 @@ export default function Guides() {
   const [editId, setEditId] = useState<number | null>(null);
 
   const fetchGuides = async () => {
-    const res = await fetch('/api/guides');
+    const res = await fetch(`/api/guides?t=${Date.now()}`, { cache: 'no-store' });
     const data = await res.json();
     setGuides(data as Guide[]);
   };
@@ -46,7 +46,7 @@ export default function Guides() {
           body: JSON.stringify({ action: 'edit', title, content, co_authors: coAuthors }),
           headers: { 'Content-Type': 'application/json' }
         });
-        if (res.ok) fetchGuides();
+        if (res.ok) await fetchGuides();
         setEditId(null);
       } else {
         const res = await fetch('/api/guides', {
@@ -54,7 +54,7 @@ export default function Guides() {
           body: JSON.stringify({ title, content, poster: userName, co_authors: coAuthors }),
           headers: { 'Content-Type': 'application/json' }
         });
-        if (res.ok) fetchGuides();
+        if (res.ok) await fetchGuides();
       }
       setTitle('');
       setContent('');

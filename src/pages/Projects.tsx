@@ -30,7 +30,7 @@ export default function Projects() {
   const [editId, setEditId] = useState<number | null>(null);
 
   const fetchItems = async () => {
-    const res = await fetch('/api/projects');
+    const res = await fetch(`/api/projects?t=${Date.now()}`, { cache: 'no-store' });
     const data = await res.json();
     setItems(data as ProjectItem[]);
   };
@@ -61,7 +61,7 @@ export default function Projects() {
           body: JSON.stringify({ action: 'edit', title, description, status, co_authors: coAuthors }),
           headers: { 'Content-Type': 'application/json' }
         });
-        if (res.ok) fetchItems();
+        if (res.ok) await fetchItems();
         setEditId(null);
       } else {
         const res = await fetch('/api/projects', {
@@ -69,7 +69,7 @@ export default function Projects() {
           body: JSON.stringify({ title, description, author: authorInput || userName, status, co_authors: coAuthors }),
           headers: { 'Content-Type': 'application/json' }
         });
-        if (res.ok) fetchItems();
+        if (res.ok) await fetchItems();
       }
       setTitle('');
       setDescription('');

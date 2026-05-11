@@ -38,7 +38,7 @@ export default function Timeline() {
   const [editId, setEditId] = useState<number | null>(null);
 
   const fetchItems = async () => {
-    const res = await fetch('/api/timeline');
+    const res = await fetch(`/api/timeline?t=${Date.now()}`, { cache: 'no-store' });
     const data = await res.json();
     setItems(data as TimelineItem[]);
   };
@@ -59,7 +59,7 @@ export default function Timeline() {
           body: JSON.stringify({ action: 'edit', title, description, url, co_authors: coAuthors }),
           headers: { 'Content-Type': 'application/json' }
         });
-        if (res.ok) fetchItems();
+        if (res.ok) await fetchItems();
         setEditId(null);
       } else {
         const res = await fetch('/api/timeline', {
@@ -67,7 +67,7 @@ export default function Timeline() {
           body: JSON.stringify({ type, url, title, description, author: userName, co_authors: coAuthors }),
           headers: { 'Content-Type': 'application/json' }
         });
-        if (res.ok) fetchItems();
+        if (res.ok) await fetchItems();
       }
       setType('youtube');
       setUrl('');

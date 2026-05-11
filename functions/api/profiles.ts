@@ -10,7 +10,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
      FROM profiles ORDER BY created_at ASC`
   ).all();
   return Response.json(results, {
-    headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
+    headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'CDN-Cache-Control': 'no-store' }
   });
 };
 
