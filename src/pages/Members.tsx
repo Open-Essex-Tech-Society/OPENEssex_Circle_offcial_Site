@@ -53,7 +53,6 @@ export default function Members() {
       setMembers(sorted);
       setIsLoading(false);
 
-      // Check if current user is CTO
       if (user) {
         const currentMember = sorted.find(m => m.uid === user.uid);
         if (currentMember && currentMember.role && currentMember.role.toUpperCase().includes('CTO')) {
@@ -72,17 +71,11 @@ export default function Members() {
   const handleUpdateRole = async (targetUid: string) => {
     if (!user || !newRole.trim()) return;
     setAdminMessage('');
-
     try {
       const res = await fetch('/api/admin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          admin_uid: user.uid,
-          action: 'update_role',
-          target_uid: targetUid,
-          new_role: newRole.trim()
-        })
+        body: JSON.stringify({ admin_uid: user.uid, action: 'update_role', target_uid: targetUid, new_role: newRole.trim() })
       });
       const data = await res.json();
       if (res.ok) {
@@ -102,16 +95,11 @@ export default function Members() {
     if (!user) return;
     if (!confirm(`${name} を本当に削除しますか？この操作は取り消せません。`)) return;
     setAdminMessage('');
-
     try {
       const res = await fetch('/api/admin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          admin_uid: user.uid,
-          action: 'delete_member',
-          target_uid: targetUid
-        })
+        body: JSON.stringify({ admin_uid: user.uid, action: 'delete_member', target_uid: targetUid })
       });
       const data = await res.json();
       if (res.ok) {
@@ -131,11 +119,7 @@ export default function Members() {
       <p className="page-subtitle">メンバー数（{members.length}人）</p>
 
       {isCTO && (
-        <button
-          onClick={() => setShowAdmin(!showAdmin)}
-          className="btn btn-primary"
-          style={{ marginBottom: '1.5rem' }}
-        >
+        <button onClick={() => setShowAdmin(!showAdmin)} className="btn btn-primary" style={{ marginBottom: '1.5rem' }}>
           {showAdmin ? '管理モードを終了' : '🔧 管理モード'}
         </button>
       )}
@@ -153,98 +137,88 @@ export default function Members() {
       ) : (
         <div className="members-list">
           {members.map(member => (
-            <div key={member.uid} className="member-row-wrapper">
-              <Link to={`/profile/${member.uid}`} className="member-row glass-panel">
-                <div className="member-row-bg"></div>
-                <div className="member-row-content">
-                  <div className="member-row-avatar">
-                    {member.avatar_url ? (
-                      <img src={member.avatar_url} alt={member.display_name} className="member-row-img" />
-                    ) : (
-                      <div className="member-row-placeholder">
-                        {member.display_name.charAt(0).toUpperCase()}
-                      </div>
-                    )}
-                  </div>
-                  <div className="member-row-info">
-                    <div className="member-row-top">
-                      <h3 className="member-row-name">{member.display_name}</h3>
-                      <span className={`member-role ${isExecutive(member.role) ? 'role-executive' : ''}`}>
-                        {member.role}
-                      </span>
-                    </div>
-                    {member.bio && <p className="member-row-bio">{member.bio.length > 100 ? member.bio.slice(0, 100) + '...' : member.bio}</p>}
-                  </div>
-                  {member.skills && (
-                    <div className="member-row-skills">
-                      {member.skills.split(',').filter((s: string) => s.trim()).map((skill: string, i: number) => (
-                        <span key={i} className="skill-tag">{skill.trim()}</span>
-                      ))}
-                    </div>
-                  )}
-                  <span className="member-row-arrow">→</span>
-                </div>
-              </Link>
-
-              {showAdmin && member.uid !== user?.uid && (
-                <div className="admin-actions glass-panel" style={{
-                  padding: '0.8rem 1.5rem',
-                  marginTop: '-8px',
-                  marginBottom: '8px',
-                  borderTopLeftRadius: 0,
-                  borderTopRightRadius: 0,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.8rem',
-                  flexWrap: 'wrap'
-                }}>
-                  {editingRole === member.uid ? (
-                    <>
-                      <input
-                        type="text"
-                        value={newRole}
-                        onChange={e => setNewRole(e.target.value)}
-                        placeholder="新しい役職"
-                        className="input-field"
-                        style={{ flex: 1, minWidth: '150px', marginBottom: 0, padding: '6px 12px', fontSize: '0.85rem' }}
-                      />
-                      <button
-                        className="btn btn-primary"
-                        style={{ padding: '6px 16px', fontSize: '0.85rem' }}
-                        onClick={(e) => { e.preventDefault(); handleUpdateRole(member.uid); }}
-                      >
-                        保存
-                      </button>
-                      <button
-                        className="btn outline-btn"
-                        style={{ padding: '6px 16px', fontSize: '0.85rem' }}
-                        onClick={() => { setEditingRole(null); setNewRole(''); }}
-                      >
-                        キャンセル
-                      </button>
-                    </>
+            <Link to={`/profile/${member.uid}`} key={member.uid} className="member-row glass-panel">
+              <div className="member-row-bg"></div>
+              <div className="member-row-content">
+                <div className="member-row-avatar">
+                  {member.avatar_url ? (
+                    <img src={member.avatar_url} alt={member.display_name} className="member-row-img" />
                   ) : (
-                    <>
-                      <button
-                        className="btn btn-edit"
-                        style={{ padding: '6px 16px', fontSize: '0.85rem' }}
-                        onClick={() => { setEditingRole(member.uid); setNewRole(member.role); }}
-                      >
-                        🏷️ 役職を変更
-                      </button>
-                      <button
-                        className="btn btn-delete"
-                        style={{ padding: '6px 16px', fontSize: '0.85rem' }}
-                        onClick={() => handleDeleteMember(member.uid, member.display_name)}
-                      >
-                        🗑️ メンバーを削除
-                      </button>
-                    </>
+                    <div className="member-row-placeholder">
+                      {member.display_name.charAt(0).toUpperCase()}
+                    </div>
                   )}
                 </div>
-              )}
-            </div>
+                <div className="member-row-info">
+                  <div className="member-row-top">
+                    <h3 className="member-row-name">{member.display_name}</h3>
+                    <span className={`member-role ${isExecutive(member.role) ? 'role-executive' : ''}`}>
+                      {member.role}
+                    </span>
+                  </div>
+                  {member.bio && <p className="member-row-bio">{member.bio.length > 100 ? member.bio.slice(0, 100) + '...' : member.bio}</p>}
+                </div>
+                {member.skills && (
+                  <div className="member-row-skills">
+                    {member.skills.split(',').filter((s: string) => s.trim()).map((skill: string, i: number) => (
+                      <span key={i} className="skill-tag">{skill.trim()}</span>
+                    ))}
+                  </div>
+                )}
+                <span className="member-row-arrow">→</span>
+              </div>
+            </Link>
           ))}
+        </div>
+      )}
+
+      {/* CTO Admin Panel - separate section below the member list */}
+      {showAdmin && (
+        <div style={{ marginTop: '2rem' }}>
+          <h2 style={{ marginBottom: '1rem' }}>🔧 メンバー管理</h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+            {members.filter(m => m.uid !== user?.uid).map(member => (
+              <div key={member.uid} className="glass-panel" style={{ padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', flex: 1, minWidth: '200px' }}>
+                  {member.avatar_url ? (
+                    <img src={member.avatar_url} alt="" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }} />
+                  ) : (
+                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--brand-gradient)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.85rem' }}>
+                      {member.display_name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <div>
+                    <strong>{member.display_name}</strong>
+                    <span style={{ marginLeft: '0.5rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>{member.role}</span>
+                  </div>
+                </div>
+
+                {editingRole === member.uid ? (
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <input
+                      type="text"
+                      value={newRole}
+                      onChange={e => setNewRole(e.target.value)}
+                      placeholder="新しい役職"
+                      className="input-field"
+                      style={{ marginBottom: 0, padding: '6px 12px', fontSize: '0.85rem', width: '150px' }}
+                    />
+                    <button className="btn btn-primary" style={{ padding: '6px 16px', fontSize: '0.85rem' }}
+                      onClick={(e) => { e.preventDefault(); handleUpdateRole(member.uid); }}>保存</button>
+                    <button className="btn outline-btn" style={{ padding: '6px 16px', fontSize: '0.85rem' }}
+                      onClick={() => { setEditingRole(null); setNewRole(''); }}>取消</button>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button className="btn btn-edit" style={{ padding: '6px 16px', fontSize: '0.85rem' }}
+                      onClick={() => { setEditingRole(member.uid); setNewRole(member.role); }}>🏷️ 役職変更</button>
+                    <button className="btn btn-delete" style={{ padding: '6px 16px', fontSize: '0.85rem' }}
+                      onClick={() => handleDeleteMember(member.uid, member.display_name)}>🗑️ 削除</button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
