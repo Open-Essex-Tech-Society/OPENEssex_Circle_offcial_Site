@@ -15,7 +15,7 @@ interface Document {
 }
 
 export default function Documents() {
-  const { userName } = useAuth();
+  const { userName, user } = useAuth();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -23,11 +23,22 @@ export default function Documents() {
   const [content, setContent] = useState('');
   const [coAuthors, setCoAuthors] = useState('');
   const [editId, setEditId] = useState<number | null>(null);
+  const [error, setError] = useState('');
 
   const fetchDocuments = async () => {
-    const res = await fetch(`/api/documents?t=${Date.now()}`, { cache: 'no-store' });
-    const data = await res.json();
-    setDocuments(data as Document[]);
+    try {
+      const res = await fetch(`/api/documents?t=${Date.now()}`, { cache: 'no-store' });
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setDocuments(data as Document[]);
+      } else {
+        console.error('API returned non-array:', data);
+        setError(`データ取得エラー: ${data?.error || '不明なエラー'}`);
+      }
+    } catch (err) {
+      console.error('Fetch error:', err);
+      setError('データの取得に失敗しました。');
+    }
   };
 
   useEffect(() => {
@@ -37,8 +48,13 @@ export default function Documents() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
+    if (!userName) {
+      setError('投稿するにはログインしてプロフィールを設定してください。');
+      return;
+    }
 
     setIsSubmitting(true);
+    setError('');
     try {
       if (editId) {
         const res = await fetch(`/api/documents/${editId}`, {
@@ -46,7 +62,12 @@ export default function Documents() {
           body: JSON.stringify({ action: 'edit', title, content, co_authors: coAuthors }),
           headers: { 'Content-Type': 'application/json' }
         });
-        if (res.ok) await fetchDocuments();
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          setError(`更新失敗: ${errData?.error || res.statusText} ${errData?.detail || ''}`);
+          return;
+        }
+        await fetchDocuments();
         setEditId(null);
       } else {
         const res = await fetch('/api/documents', {
@@ -54,12 +75,19 @@ export default function Documents() {
           body: JSON.stringify({ title, content, author: userName, co_authors: coAuthors }),
           headers: { 'Content-Type': 'application/json' }
         });
-        if (res.ok) await fetchDocuments();
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          setError(`投稿失敗: ${errData?.error || res.statusText} ${errData?.detail || ''}`);
+          return;
+        }
+        await fetchDocuments();
       }
       setTitle('');
       setContent('');
       setCoAuthors('');
       setShowForm(false);
+    } catch (err: any) {
+      setError(`エラー: ${err?.message || '不明なエラー'}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -99,18 +127,30 @@ export default function Documents() {
       <h1>課題・資料</h1>
       <p className="page-subtitle">課題や公開資料の共有</p>
 
-      <button onClick={() => {
-        setShowForm(!showForm);
-        if (editId) { setEditId(null); setTitle(''); setContent(''); setCoAuthors(''); }
-      }} className="btn btn-primary" style={{ marginBottom: '2rem' }}>
-        {showForm ? 'キャンセル' : '新規投稿'}
-      </button>
+      {error && (
+        <div className="mypage-message error" style={{ marginBottom: '1rem' }}>
+          ⚠️ {error}
+          <button onClick={() => setError('')} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', fontSize: '1.2rem' }}>×</button>
+        </div>
+      )}
+
+      {user ? (
+        <button onClick={() => {
+          setShowForm(!showForm);
+          setError('');
+          if (editId) { setEditId(null); setTitle(''); setContent(''); setCoAuthors(''); }
+        }} className="btn btn-primary" style={{ marginBottom: '2rem' }}>
+          {showForm ? 'キャンセル' : '新規投稿'}
+        </button>
+      ) : (
+        <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>投稿するにはログインしてください。</p>
+      )}
 
       {showForm && (
         <form onSubmit={handleSubmit} className="post-form glass-panel">
           <div className="form-group row">
             <input type="text" placeholder="タイトル" value={title} onChange={e => setTitle(e.target.value)} required className="input-field" />
-            <div className="auto-author-badge">投稿者: {userName}</div>
+            <div className="auto-author-badge">投稿者: {userName || '未設定'}</div>
           </div>
           <input type="text" placeholder="共同投稿者の表示名（カンマ区切り。例: user1, user2）" value={coAuthors} onChange={e => setCoAuthors(e.target.value)} className="input-field" />
           <textarea placeholder="内容・説明（Markdown対応）" value={content} onChange={e => setContent(e.target.value)} required rows={10} className="input-field" />

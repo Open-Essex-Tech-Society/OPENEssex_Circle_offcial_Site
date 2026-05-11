@@ -15,7 +15,7 @@ interface ProjectItem {
 }
 
 export default function Projects() {
-  const { userName } = useAuth();
+  const { userName, user } = useAuth();
   const [items, setItems] = useState<ProjectItem[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -28,11 +28,21 @@ export default function Projects() {
   const [membersList, setMembersList] = useState<string[]>([]);
 
   const [editId, setEditId] = useState<number | null>(null);
+  const [error, setError] = useState('');
 
   const fetchItems = async () => {
-    const res = await fetch(`/api/projects?t=${Date.now()}`, { cache: 'no-store' });
-    const data = await res.json();
-    setItems(data as ProjectItem[]);
+    try {
+      const res = await fetch(`/api/projects?t=${Date.now()}`, { cache: 'no-store' });
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setItems(data as ProjectItem[]);
+      } else {
+        setError(`データ取得エラー: ${data?.error || '不明なエラー'}`);
+      }
+    } catch (err) {
+      console.error('Fetch error:', err);
+      setError('データの取得に失敗しました。');
+    }
   };
 
   useEffect(() => {
@@ -52,8 +62,13 @@ export default function Projects() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
+    if (!userName) {
+      setError('投稿するにはログインしてプロフィールを設定してください。');
+      return;
+    }
 
     setIsSubmitting(true);
+    setError('');
     try {
       if (editId) {
         const res = await fetch(`/api/projects/${editId}`, {
@@ -61,7 +76,12 @@ export default function Projects() {
           body: JSON.stringify({ action: 'edit', title, description, status, co_authors: coAuthors }),
           headers: { 'Content-Type': 'application/json' }
         });
-        if (res.ok) await fetchItems();
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          setError(`更新失敗: ${errData?.error || res.statusText} ${errData?.detail || ''}`);
+          return;
+        }
+        await fetchItems();
         setEditId(null);
       } else {
         const res = await fetch('/api/projects', {
@@ -69,13 +89,20 @@ export default function Projects() {
           body: JSON.stringify({ title, description, author: authorInput || userName, status, co_authors: coAuthors }),
           headers: { 'Content-Type': 'application/json' }
         });
-        if (res.ok) await fetchItems();
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          setError(`投稿失敗: ${errData?.error || res.statusText} ${errData?.detail || ''}`);
+          return;
+        }
+        await fetchItems();
       }
       setTitle('');
       setDescription('');
       setStatus('planning');
       setCoAuthors('');
       setShowForm(false);
+    } catch (err: any) {
+      setError(`エラー: ${err?.message || '不明なエラー'}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -117,13 +144,24 @@ export default function Projects() {
       <h1>企画セクション</h1>
       <p className="page-subtitle">新規でやりたい企画を提案・共有しよう</p>
 
-      <button onClick={() => {
+      {error && (
+        <div className="mypage-message error" style={{ marginBottom: '1rem' }}>
+          ⚠️ {error}
+          <button onClick={() => setError('')} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', fontSize: '1.2rem' }}>×</button>
+        </div>
+      )}
+
+      {user ? (
+        <button onClick={() => {
         setShowForm(!showForm);
         if (editId) { setEditId(null); setTitle(''); setDescription(''); setStatus('planning'); setCoAuthors(''); }
         if (!showForm && !editId) setAuthorInput(userName);
       }} className="btn btn-primary" style={{ marginBottom: '2rem' }}>
         {showForm ? 'キャンセル' : '新規企画を提案する'}
       </button>
+      ) : (
+        <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>投稿するにはログインしてください。</p>
+      )}
 
       {showForm && (
         <form onSubmit={handleSubmit} className="post-form glass-panel">

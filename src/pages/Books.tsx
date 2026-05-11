@@ -17,7 +17,7 @@ interface Book {
 }
 
 export default function Books() {
-  const { userName } = useAuth();
+  const { userName, user } = useAuth();
   const [books, setBooks] = useState<Book[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -27,11 +27,22 @@ export default function Books() {
   const [link, setLink] = useState('');
   const [coAuthors, setCoAuthors] = useState('');
   const [editId, setEditId] = useState<number | null>(null);
+  const [error, setError] = useState('');
 
   const fetchBooks = async () => {
-    const res = await fetch(`/api/books?t=${Date.now()}`, { cache: 'no-store' });
-    const data = await res.json();
-    setBooks(data as Book[]);
+    try {
+      const res = await fetch(`/api/books?t=${Date.now()}`, { cache: 'no-store' });
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setBooks(data as Book[]);
+      } else {
+        console.error('API returned non-array:', data);
+        setError(`データ取得エラー: ${data?.error || '不明なエラー'}`);
+      }
+    } catch (err) {
+      console.error('Fetch error:', err);
+      setError('データの取得に失敗しました。');
+    }
   };
 
   useEffect(() => {
@@ -41,8 +52,13 @@ export default function Books() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
+    if (!userName) {
+      setError('投稿するにはログインしてプロフィールを設定してください。');
+      return;
+    }
 
     setIsSubmitting(true);
+    setError('');
     try {
       if (editId) {
         const res = await fetch(`/api/books/${editId}`, {
@@ -50,7 +66,12 @@ export default function Books() {
           body: JSON.stringify({ action: 'edit', title, description, co_authors: coAuthors }),
           headers: { 'Content-Type': 'application/json' }
         });
-        if (res.ok) await fetchBooks();
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          setError(`更新失敗: ${errData?.error || res.statusText} ${errData?.detail || ''}`);
+          return;
+        }
+        await fetchBooks();
         setEditId(null);
       } else {
         const res = await fetch('/api/books', {
@@ -58,7 +79,12 @@ export default function Books() {
           body: JSON.stringify({ title, author: bookAuthor, description, link, poster: userName, co_authors: coAuthors }),
           headers: { 'Content-Type': 'application/json' }
         });
-        if (res.ok) await fetchBooks();
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          setError(`投稿失敗: ${errData?.error || res.statusText} ${errData?.detail || ''}`);
+          return;
+        }
+        await fetchBooks();
       }
       setTitle('');
       setBookAuthor('');
@@ -66,6 +92,8 @@ export default function Books() {
       setLink('');
       setCoAuthors('');
       setShowForm(false);
+    } catch (err: any) {
+      setError(`エラー: ${err?.message || '不明なエラー'}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -107,16 +135,28 @@ export default function Books() {
       <h1>おすすめ本</h1>
       <p className="page-subtitle">おすすめの本を共有</p>
 
-      <button onClick={() => {
-        setShowForm(!showForm);
-        if (editId) { setEditId(null); setTitle(''); setBookAuthor(''); setDescription(''); setLink(''); setCoAuthors(''); }
-      }} className="btn btn-primary" style={{ marginBottom: '2rem' }}>
-        {showForm ? 'キャンセル' : '本を推薦する'}
-      </button>
+      {error && (
+        <div className="mypage-message error" style={{ marginBottom: '1rem' }}>
+          ⚠️ {error}
+          <button onClick={() => setError('')} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', fontSize: '1.2rem' }}>×</button>
+        </div>
+      )}
+
+      {user ? (
+        <button onClick={() => {
+          setShowForm(!showForm);
+          setError('');
+          if (editId) { setEditId(null); setTitle(''); setBookAuthor(''); setDescription(''); setLink(''); setCoAuthors(''); }
+        }} className="btn btn-primary" style={{ marginBottom: '2rem' }}>
+          {showForm ? 'キャンセル' : '本を推薦する'}
+        </button>
+      ) : (
+        <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>投稿するにはログインしてください。</p>
+      )}
 
       {showForm && (
         <form onSubmit={handleSubmit} className="post-form glass-panel">
-          <div className="auto-author-badge" style={{ marginBottom: '1rem' }}>推薦者: {userName}</div>
+          <div className="auto-author-badge" style={{ marginBottom: '1rem' }}>推薦者: {userName || '未設定'}</div>
           <input type="text" placeholder="本のタイトル" value={title} onChange={e => setTitle(e.target.value)} required className="input-field" />
           {!editId && <input type="text" placeholder="著者名" value={bookAuthor} onChange={e => setBookAuthor(e.target.value)} required className="input-field" />}
           <input type="text" placeholder="共同推薦者の表示名（カンマ区切り。例: user1, user2）" value={coAuthors} onChange={e => setCoAuthors(e.target.value)} className="input-field" />
