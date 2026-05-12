@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 interface MemberProfile {
   uid: string;
@@ -15,13 +15,13 @@ interface MemberProfile {
 const getRoleWeight = (role: string) => {
   if (!role) return 8;
   const r = role.toUpperCase();
-  if (r.includes('CEO')) return 1;
-  if (r.includes('CSO')) return 2;
-  if (r.includes('CFO')) return 3;
-  if (r.includes('CTO')) return 4;
-  if (r.includes('COO')) return 5;
-  if (r.includes('CMO')) return 6;
-  if (role !== 'Member' && role !== 'メンバー') return 7;
+  if (r.includes("CEO")) return 1;
+  if (r.includes("CSO")) return 2;
+  if (r.includes("CFO")) return 3;
+  if (r.includes("CTO")) return 4;
+  if (r.includes("COO")) return 5;
+  if (r.includes("CMO")) return 6;
+  if (role !== "Member" && role !== "メンバー") return 7;
   return 8;
 };
 
@@ -37,25 +37,33 @@ export default function Members() {
   const [isCTO, setIsCTO] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
   const [editingRole, setEditingRole] = useState<string | null>(null);
-  const [newRole, setNewRole] = useState('');
-  const [adminMessage, setAdminMessage] = useState('');
+  const [newRole, setNewRole] = useState("");
+  const [adminMessage, setAdminMessage] = useState("");
 
   const fetchMembers = async () => {
     try {
-      const res = await fetch(`/api/profiles?t=${Date.now()}`, { cache: 'no-store' });
+      const res = await fetch(`/api/profiles?t=${Date.now()}`, {
+        cache: "no-store",
+      });
       const data = await res.json();
       const sorted = (data as MemberProfile[]).sort((a, b) => {
         const wA = getRoleWeight(a.role);
         const wB = getRoleWeight(b.role);
         if (wA !== wB) return wA - wB;
-        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        return (
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        );
       });
       setMembers(sorted);
       setIsLoading(false);
 
       if (user) {
-        const currentMember = sorted.find(m => m.uid === user.uid);
-        if (currentMember && currentMember.role && currentMember.role.toUpperCase().includes('CTO')) {
+        const currentMember = sorted.find((m) => m.uid === user.uid);
+        if (
+          currentMember &&
+          currentMember.role &&
+          currentMember.role.toUpperCase().includes("CTO")
+        ) {
           setIsCTO(true);
         }
       }
@@ -70,18 +78,23 @@ export default function Members() {
 
   const handleUpdateRole = async (targetUid: string) => {
     if (!user || !newRole.trim()) return;
-    setAdminMessage('');
+    setAdminMessage("");
     try {
-      const res = await fetch('/api/admin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ admin_uid: user.uid, action: 'update_role', target_uid: targetUid, new_role: newRole.trim() })
+      const res = await fetch("/api/admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          admin_uid: user.uid,
+          action: "update_role",
+          target_uid: targetUid,
+          new_role: newRole.trim(),
+        }),
       });
       const data = await res.json();
       if (res.ok) {
-        setAdminMessage('✅ 役職を更新しました');
+        setAdminMessage("✅ 役職を更新しました");
         setEditingRole(null);
-        setNewRole('');
+        setNewRole("");
         await fetchMembers();
       } else {
         setAdminMessage(`❌ ${data.error}`);
@@ -93,13 +106,18 @@ export default function Members() {
 
   const handleDeleteMember = async (targetUid: string, name: string) => {
     if (!user) return;
-    if (!confirm(`${name} を本当に削除しますか？この操作は取り消せません。`)) return;
-    setAdminMessage('');
+    if (!confirm(`${name} を本当に削除しますか？この操作は取り消せません。`))
+      return;
+    setAdminMessage("");
     try {
-      const res = await fetch('/api/admin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ admin_uid: user.uid, action: 'delete_member', target_uid: targetUid })
+      const res = await fetch("/api/admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          admin_uid: user.uid,
+          action: "delete_member",
+          target_uid: targetUid,
+        }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -115,34 +133,49 @@ export default function Members() {
 
   return (
     <div className="page-container">
-      <h1>メンバー一覧</h1>
+      <h1>Members</h1>
       <p className="page-subtitle">メンバー数（{members.length}人）</p>
 
       {isCTO && (
-        <button onClick={() => setShowAdmin(!showAdmin)} className="btn btn-primary" style={{ marginBottom: '1.5rem' }}>
-          {showAdmin ? '管理モードを終了' : '🔧 管理モード'}
+        <button
+          onClick={() => setShowAdmin(!showAdmin)}
+          className="btn btn-primary"
+          style={{ marginBottom: "1.5rem" }}
+        >
+          {showAdmin ? "管理モードを終了" : "🔧 管理モード"}
         </button>
       )}
 
       {adminMessage && (
-        <div className={`mypage-message ${adminMessage.includes('❌') ? 'error' : 'success'}`} style={{ marginBottom: '1rem' }}>
+        <div
+          className={`mypage-message ${adminMessage.includes("❌") ? "error" : "success"}`}
+          style={{ marginBottom: "1rem" }}
+        >
           {adminMessage}
         </div>
       )}
 
       {isLoading ? (
-        <p style={{ textAlign: 'center' }}>読み込み中...</p>
+        <p style={{ textAlign: "center" }}>読み込み中...</p>
       ) : members.length === 0 ? (
         <p className="empty-state">まだメンバーが登録されていません。</p>
       ) : (
         <div className="members-list">
-          {members.map(member => (
-            <Link to={`/profile/${member.uid}`} key={member.uid} className="member-row glass-panel">
+          {members.map((member) => (
+            <Link
+              to={`/profile/${member.uid}`}
+              key={member.uid}
+              className="member-row glass-panel"
+            >
               <div className="member-row-bg"></div>
               <div className="member-row-content">
                 <div className="member-row-avatar">
                   {member.avatar_url ? (
-                    <img src={member.avatar_url} alt={member.display_name} className="member-row-img" />
+                    <img
+                      src={member.avatar_url}
+                      alt={member.display_name}
+                      className="member-row-img"
+                    />
                   ) : (
                     <div className="member-row-placeholder">
                       {member.display_name.charAt(0).toUpperCase()}
@@ -152,17 +185,30 @@ export default function Members() {
                 <div className="member-row-info">
                   <div className="member-row-top">
                     <h3 className="member-row-name">{member.display_name}</h3>
-                    <span className={`member-role ${isExecutive(member.role) ? 'role-executive' : ''}`}>
+                    <span
+                      className={`member-role ${isExecutive(member.role) ? "role-executive" : ""}`}
+                    >
                       {member.role}
                     </span>
                   </div>
-                  {member.bio && <p className="member-row-bio">{member.bio.length > 100 ? member.bio.slice(0, 100) + '...' : member.bio}</p>}
+                  {member.bio && (
+                    <p className="member-row-bio">
+                      {member.bio.length > 100
+                        ? member.bio.slice(0, 100) + "..."
+                        : member.bio}
+                    </p>
+                  )}
                 </div>
                 {member.skills && (
                   <div className="member-row-skills">
-                    {member.skills.split(',').filter((s: string) => s.trim()).map((skill: string, i: number) => (
-                      <span key={i} className="skill-tag">{skill.trim()}</span>
-                    ))}
+                    {member.skills
+                      .split(",")
+                      .filter((s: string) => s.trim())
+                      .map((skill: string, i: number) => (
+                        <span key={i} className="skill-tag">
+                          {skill.trim()}
+                        </span>
+                      ))}
                   </div>
                 )}
                 <span className="member-row-arrow">→</span>
@@ -174,50 +220,144 @@ export default function Members() {
 
       {/* CTO Admin Panel - separate section below the member list */}
       {showAdmin && (
-        <div style={{ marginTop: '2rem' }}>
-          <h2 style={{ marginBottom: '1rem' }}>🔧 メンバー管理</h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-            {members.filter(m => m.uid !== user?.uid).map(member => (
-              <div key={member.uid} className="glass-panel" style={{ padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', flex: 1, minWidth: '200px' }}>
-                  {member.avatar_url ? (
-                    <img src={member.avatar_url} alt="" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }} />
+        <div style={{ marginTop: "2rem" }}>
+          <h2 style={{ marginBottom: "1rem" }}>🔧 メンバー管理</h2>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "0.8rem" }}
+          >
+            {members
+              .filter((m) => m.uid !== user?.uid)
+              .map((member) => (
+                <div
+                  key={member.uid}
+                  className="glass-panel"
+                  style={{
+                    padding: "1rem 1.5rem",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "1rem",
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.8rem",
+                      flex: 1,
+                      minWidth: "200px",
+                    }}
+                  >
+                    {member.avatar_url ? (
+                      <img
+                        src={member.avatar_url}
+                        alt=""
+                        style={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: "50%",
+                          objectFit: "cover",
+                        }}
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: "50%",
+                          background: "var(--brand-gradient)",
+                          color: "white",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontWeight: 700,
+                          fontSize: "0.85rem",
+                        }}
+                      >
+                        {member.display_name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <div>
+                      <strong>{member.display_name}</strong>
+                      <span
+                        style={{
+                          marginLeft: "0.5rem",
+                          fontSize: "0.8rem",
+                          color: "var(--text-muted)",
+                        }}
+                      >
+                        {member.role}
+                      </span>
+                    </div>
+                  </div>
+
+                  {editingRole === member.uid ? (
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "0.5rem",
+                        alignItems: "center",
+                      }}
+                    >
+                      <input
+                        type="text"
+                        value={newRole}
+                        onChange={(e) => setNewRole(e.target.value)}
+                        placeholder="新しい役職"
+                        className="input-field"
+                        style={{
+                          marginBottom: 0,
+                          padding: "6px 12px",
+                          fontSize: "0.85rem",
+                          width: "150px",
+                        }}
+                      />
+                      <button
+                        className="btn btn-primary"
+                        style={{ padding: "6px 16px", fontSize: "0.85rem" }}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleUpdateRole(member.uid);
+                        }}
+                      >
+                        保存
+                      </button>
+                      <button
+                        className="btn outline-btn"
+                        style={{ padding: "6px 16px", fontSize: "0.85rem" }}
+                        onClick={() => {
+                          setEditingRole(null);
+                          setNewRole("");
+                        }}
+                      >
+                        取消
+                      </button>
+                    </div>
                   ) : (
-                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--brand-gradient)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.85rem' }}>
-                      {member.display_name.charAt(0).toUpperCase()}
+                    <div style={{ display: "flex", gap: "0.5rem" }}>
+                      <button
+                        className="btn btn-edit"
+                        style={{ padding: "6px 16px", fontSize: "0.85rem" }}
+                        onClick={() => {
+                          setEditingRole(member.uid);
+                          setNewRole(member.role);
+                        }}
+                      >
+                        🏷️ 役職変更
+                      </button>
+                      <button
+                        className="btn btn-delete"
+                        style={{ padding: "6px 16px", fontSize: "0.85rem" }}
+                        onClick={() =>
+                          handleDeleteMember(member.uid, member.display_name)
+                        }
+                      >
+                        🗑️ 削除
+                      </button>
                     </div>
                   )}
-                  <div>
-                    <strong>{member.display_name}</strong>
-                    <span style={{ marginLeft: '0.5rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>{member.role}</span>
-                  </div>
                 </div>
-
-                {editingRole === member.uid ? (
-                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                    <input
-                      type="text"
-                      value={newRole}
-                      onChange={e => setNewRole(e.target.value)}
-                      placeholder="新しい役職"
-                      className="input-field"
-                      style={{ marginBottom: 0, padding: '6px 12px', fontSize: '0.85rem', width: '150px' }}
-                    />
-                    <button className="btn btn-primary" style={{ padding: '6px 16px', fontSize: '0.85rem' }}
-                      onClick={(e) => { e.preventDefault(); handleUpdateRole(member.uid); }}>保存</button>
-                    <button className="btn outline-btn" style={{ padding: '6px 16px', fontSize: '0.85rem' }}
-                      onClick={() => { setEditingRole(null); setNewRole(''); }}>取消</button>
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button className="btn btn-edit" style={{ padding: '6px 16px', fontSize: '0.85rem' }}
-                      onClick={() => { setEditingRole(member.uid); setNewRole(member.role); }}>🏷️ 役職変更</button>
-                    <button className="btn btn-delete" style={{ padding: '6px 16px', fontSize: '0.85rem' }}
-                      onClick={() => handleDeleteMember(member.uid, member.display_name)}>🗑️ 削除</button>
-                  </div>
-                )}
-              </div>
-            ))}
+              ))}
           </div>
         </div>
       )}
