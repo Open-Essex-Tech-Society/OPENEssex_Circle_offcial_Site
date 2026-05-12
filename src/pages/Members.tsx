@@ -19,7 +19,7 @@ const getRoleWeight = (role: string) => {
   if (r.includes("CSO")) return 2;
   if (r.includes("CFO")) return 3;
   if (r.includes("CTO")) return 4;
-  if (r.includes("COO")) return 5;
+  if (r.includes("Independent Engineer for Lovers")) return 5;
   if (r.includes("CMO")) return 6;
   if (role !== "Member" && role !== "メンバー") return 7;
   return 8;
