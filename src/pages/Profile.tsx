@@ -15,11 +15,19 @@ interface ProfileData {
   created_at: string;
 }
 
+interface ActivityItem {
+  id: number;
+  title: string;
+  section: string;
+  created_at: string;
+}
+
 export default function Profile() {
   const { uid } = useParams<{ uid: string }>();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [activities, setActivities] = useState<ActivityItem[]>([]);
 
   useEffect(() => {
     if (!uid) return;
@@ -34,6 +42,15 @@ export default function Profile() {
       })
       .catch(() => { setNotFound(true); setIsLoading(false); });
   }, [uid]);
+
+  useEffect(() => {
+    if (profile?.display_name) {
+      fetch(`/api/user-activity/${encodeURIComponent(profile.display_name)}`)
+        .then((res) => res.json())
+        .then((data) => setActivities(data as ActivityItem[]))
+        .catch(console.error);
+    }
+  }, [profile?.display_name]);
 
   if (isLoading) return <div className="page-container"><p>読み込み中...</p></div>;
   if (notFound || !profile) {
@@ -116,6 +133,52 @@ export default function Profile() {
           </div>
         )}
       </div>
+
+      {activities.length > 0 && (
+        <div className="profile-section glass-panel" style={{ marginTop: "2rem" }}>
+          <h3>{profile.display_name}の活動履歴</h3>
+          <div className="activity-list" style={{ marginTop: "1rem" }}>
+            {activities.map((act, index) => (
+              <div
+                key={`${act.section}-${act.id}-${index}`}
+                className="activity-item"
+                style={{
+                  padding: "0.8rem",
+                  borderBottom: "1px solid var(--glass-border)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "1rem",
+                }}
+              >
+                <span
+                  className={`tag tag-${act.section}`}
+                  style={{
+                    fontSize: "0.7rem",
+                    minWidth: "80px",
+                    textAlign: "center",
+                  }}
+                >
+                  {act.section === "projects"
+                    ? "企画"
+                    : act.section === "documents"
+                      ? "資料"
+                      : act.section === "timeline"
+                        ? "TL"
+                        : act.section === "guides"
+                          ? "ガイド"
+                          : "おすすめ本"}
+                </span>
+                <span style={{ fontWeight: 600, flex: 1 }}>{act.title}</span>
+                <span
+                  style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}
+                >
+                  {new Date(act.created_at).toLocaleDateString("ja-JP")}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div style={{ textAlign: 'center', marginTop: '2rem' }}>
         <Link to="/members" className="btn outline-btn">← メンバー一覧に戻る</Link>
