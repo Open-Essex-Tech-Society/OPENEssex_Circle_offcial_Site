@@ -8,6 +8,7 @@ interface Guide {
   id: number;
   title: string;
   content: string;
+  category?: string;
   poster?: string;
   co_authors?: string;
   created_at: string;
@@ -21,9 +22,13 @@ export default function Guides() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [category, setCategory] = useState('一般');
   const [coAuthors, setCoAuthors] = useState('');
   const [editId, setEditId] = useState<number | null>(null);
   const [error, setError] = useState('');
+  const [filterCategory, setFilterCategory] = useState('すべて');
+
+  const CATEGORIES = ['一般', '技術', '知識', 'イベント', 'その他'];
 
   const fetchGuides = async () => {
     try {
@@ -59,7 +64,7 @@ export default function Guides() {
       if (editId) {
         const res = await fetch(`/api/guides/${editId}`, {
           method: 'PUT',
-          body: JSON.stringify({ action: 'edit', title, content, co_authors: coAuthors }),
+          body: JSON.stringify({ action: 'edit', title, content, category, co_authors: coAuthors }),
           headers: { 'Content-Type': 'application/json' }
         });
         if (!res.ok) {
@@ -72,7 +77,7 @@ export default function Guides() {
       } else {
         const res = await fetch('/api/guides', {
           method: 'POST',
-          body: JSON.stringify({ title, content, poster: userName, co_authors: coAuthors }),
+          body: JSON.stringify({ title, content, category, poster: userName, co_authors: coAuthors }),
           headers: { 'Content-Type': 'application/json' }
         });
         if (!res.ok) {
@@ -84,6 +89,7 @@ export default function Guides() {
       }
       setTitle('');
       setContent('');
+      setCategory('一般');
       setCoAuthors('');
       setShowForm(false);
     } catch (err: any) {
@@ -97,6 +103,7 @@ export default function Guides() {
     setEditId(guide.id);
     setTitle(guide.title);
     setContent(guide.content);
+    setCategory(guide.category || '一般');
     setCoAuthors(guide.co_authors || '');
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -108,16 +115,28 @@ export default function Guides() {
     fetchGuides();
   };
 
+  const canEdit = (guide: Guide) => {
+    if (!userName) return false;
+    if (!guide.poster || guide.poster === userName) return true;
+    if (guide.co_authors && guide.co_authors.split(',').map(s => s.trim()).includes(userName)) return true;
+    return false;
+  };
+
   const handleLike = async (id: number) => {
     const likedKey = `liked_guides_${id}`;
-    if (localStorage.getItem(likedKey)) return;
+    const isLiked = !!localStorage.getItem(likedKey);
 
-    setGuides(prev => prev.map(guide => guide.id === id ? { ...guide, likes: (guide.likes || 0) + 1 } : guide));
-    localStorage.setItem(likedKey, 'true');
+    setGuides(prev => prev.map(guide => guide.id === id ? { ...guide, likes: Math.max(0, (guide.likes || 0) + (isLiked ? -1 : 1)) } : guide));
+    
+    if (isLiked) {
+      localStorage.removeItem(likedKey);
+    } else {
+      localStorage.setItem(likedKey, 'true');
+    }
 
     await fetch(`/api/guides/${id}`, {
       method: 'PUT',
-      body: JSON.stringify({ action: 'like' }),
+      body: JSON.stringify({ action: isLiked ? 'unlike' : 'like' }),
       headers: { 'Content-Type': 'application/json' }
     });
   };
@@ -138,7 +157,7 @@ export default function Guides() {
         <button onClick={() => {
           setShowForm(!showForm);
           setError('');
-          if (editId) { setEditId(null); setTitle(''); setContent(''); setCoAuthors(''); }
+          if (editId) { setEditId(null); setTitle(''); setContent(''); setCategory('一般'); setCoAuthors(''); }
         }} className="btn btn-primary" style={{ marginBottom: '2rem' }}>
           {showForm ? 'キャンセル' : 'ガイドを投稿する'}
         </button>
@@ -150,6 +169,11 @@ export default function Guides() {
         <form onSubmit={handleSubmit} className="post-form glass-panel">
           <div className="auto-author-badge" style={{ marginBottom: '1rem' }}>投稿者: {userName || '未設定'}</div>
           <input type="text" placeholder="ガイドのタイトル" value={title} onChange={e => setTitle(e.target.value)} required className="input-field" />
+          <select value={category} onChange={e => setCategory(e.target.value)} className="input-field" required style={{ marginBottom: '1rem' }}>
+            {CATEGORIES.map(cat => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
+          </select>
           <input type="text" placeholder="共同投稿者の表示名（カンマ区切り。例: user1, user2）" value={coAuthors} onChange={e => setCoAuthors(e.target.value)} className="input-field" />
           <textarea placeholder="ガイドの内容（Markdown対応）" value={content} onChange={e => setContent(e.target.value)} required rows={15} className="input-field" />
           <p style={{ fontSize: '0.8rem', marginTop: '-0.5rem', marginBottom: '1rem', color: 'var(--text-muted)' }}>※Markdown記法（# 見出し, * リスト, **太字** など）が使えます</p>
@@ -160,9 +184,27 @@ export default function Guides() {
       )}
 
       <div className="list-container">
-        {guides.length === 0 ? <p>ガイドはまだありません。</p> : guides.map(guide => (
+        <div className="category-filters" style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
+          {['すべて', ...CATEGORIES].map(cat => (
+            <button
+              key={cat}
+              onClick={() => setFilterCategory(cat)}
+              className={`btn ${filterCategory === cat ? 'btn-primary' : ''}`}
+              style={{ padding: '0.4rem 1rem', borderRadius: '20px', fontSize: '0.9rem', whiteSpace: 'nowrap' }}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        {guides.filter(guide => filterCategory === 'すべて' || guide.category === filterCategory).length === 0 ? <p>ガイドはまだありません。</p> : guides.filter(guide => filterCategory === 'すべて' || guide.category === filterCategory).map(guide => (
           <div key={guide.id} className="card glass-panel">
-            <h2>{guide.title}</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+              <span style={{ fontSize: '0.8rem', padding: '0.2rem 0.5rem', background: 'var(--primary-color)', color: 'white', borderRadius: '4px' }}>
+                {guide.category || '一般'}
+              </span>
+              <h2 style={{ margin: 0 }}>{guide.title}</h2>
+            </div>
             <div className="meta" style={{ marginBottom: '1rem' }}>
               <AuthorBadge author={guide.poster || ''} date={guide.created_at} coAuthors={guide.co_authors} />
             </div>
@@ -174,7 +216,7 @@ export default function Guides() {
               <button className={`btn btn-like ${localStorage.getItem(`liked_guides_${guide.id}`) ? 'liked' : ''}`} onClick={() => handleLike(guide.id)}>
                 <span className="icon">♥</span> {guide.likes || 0}
               </button>
-              {(!guide.poster || userName === guide.poster) && (
+              {canEdit(guide) && (
                 <>
                   <div className="spacer"></div>
                   <button className="btn btn-edit" onClick={() => handleEdit(guide)}>編集</button>

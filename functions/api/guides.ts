@@ -24,8 +24,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       return Response.json({ error: 'Missing fields', fields: { title: !!data.title, content: !!data.content, poster: !!data.poster } }, { status: 400 });
     }
 
-    await DB.prepare("INSERT INTO guides (title, content, poster, co_authors) VALUES (?, ?, ?, ?)")
-      .bind(data.title, data.content, data.poster, data.co_authors || '')
+    const category = data.category || '一般';
+
+    await DB.prepare("INSERT INTO guides (title, content, poster, co_authors, category) VALUES (?, ?, ?, ?, ?)")
+      .bind(data.title, data.content, data.poster, data.co_authors || '', category)
       .run();
 
     return Response.json({ success: true }, { status: 201 });
