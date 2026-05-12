@@ -1,1 +1,0 @@
-ALTER TABLE guides ADD COLUMN category TEXT DEFAULT '一般';

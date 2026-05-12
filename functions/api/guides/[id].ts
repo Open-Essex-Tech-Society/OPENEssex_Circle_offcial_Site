@@ -14,8 +14,7 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
     await DB.prepare("UPDATE guides SET likes = MAX(COALESCE(likes, 0) - 1, 0) WHERE id = ?").bind(id).run();
     return new Response("Unliked", { status: 200 });
   } else if (data.action === "edit") {
-    const category = data.category || '一般';
-    await DB.prepare("UPDATE guides SET title = ?, content = ?, co_authors = ?, category = ? WHERE id = ?").bind(data.title, data.content, data.co_authors || '', category, id).run();
+    await DB.prepare("UPDATE guides SET title = ?, content = ?, co_authors = ? WHERE id = ?").bind(data.title, data.content, data.co_authors || '', id).run();
     return new Response("Updated", { status: 200 });
   }
   return new Response("Bad Request", { status: 400 });
