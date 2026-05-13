@@ -176,48 +176,6 @@ export default function Profile() {
           </div>
         )}
       </div>
-      <h3>あなたの活動履歴</h3>
-      <p className="page-subtitle" style={{ marginBottom: "1rem" }}>
-        これまで提案・共有した項目
-      </p>
-      <div className="activity-list">
-        {activities.map((act, index) => (
-          <div
-            key={`${act.section}-${act.id}-${index}`}
-            className="activity-item"
-            style={{
-              padding: "0.8rem",
-              borderBottom: "1px solid var(--glass-border)",
-              display: "flex",
-              alignItems: "center",
-              gap: "1rem",
-            }}
-          >
-            <span
-              className={`tag tag-${act.section}`}
-              style={{
-                fontSize: "0.7rem",
-                minWidth: "80px",
-                textAlign: "center",
-              }}
-            >
-              {act.section === "projects"
-                ? "企画"
-                : act.section === "documents"
-                  ? "資料"
-                  : act.section === "timeline"
-                    ? "TL"
-                    : act.section === "guides"
-                      ? "ガイド"
-                      : "おすすめ本"}
-            </span>
-            <span style={{ fontWeight: 600, flex: 1 }}>{act.title}</span>
-            <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
-              {new Date(act.created_at).toLocaleDateString("ja-JP")}
-            </span>
-          </div>
-        ))}
-      </div>
 
       <div style={{ textAlign: "center", marginTop: "2rem" }}>
         <Link to="/members" className="btn outline-btn">
